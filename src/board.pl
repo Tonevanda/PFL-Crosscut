@@ -44,7 +44,13 @@ draw_bottom_half(N) :-
     draw_bottom_half(N1).
 draw_bottom_half(0).
 
-display_board(RowIndex, Rows, Columns, Board) :-
+display_board(Rows, Columns, Board) :-
+    write(' '),
+    Columns1 is Columns * 3 + Columns-1,
+    draw_horizontal_line(Columns1),
+    display_board_aux(0, Rows, Columns, Board).
+
+display_board_aux(RowIndex, Rows, Columns, Board) :-
     RowIndex < Rows,  
     nl,
     write('|'),
@@ -56,7 +62,7 @@ display_board(RowIndex, Rows, Columns, Board) :-
     write('|'),
     draw_bottom_half(Columns),
     RowIndex1 is RowIndex + 1,
-    display_board(RowIndex1, Rows, Columns, Board).
+    display_board_aux(RowIndex1, Rows, Columns, Board).
 
 % create_board(+N, +M, -Board)
 % Creates a board of size N x M

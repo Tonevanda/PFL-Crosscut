@@ -14,9 +14,6 @@ prompt_board_size(Rows, Columns) :-
 play :-
     prompt_board_size(Rows, Columns),
     create_board(Rows, Columns, Board),
-    write(' '),
-    Columns1 is Columns * 3 + Columns-1,
-    draw_horizontal_line(Columns1),
-    display_board(0, Rows, Columns, Board).
+    display_board(Rows, Columns, Board).
     %get_piece(Board, 1, 1, Element),
     %write(Element), nl.

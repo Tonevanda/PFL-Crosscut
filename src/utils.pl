@@ -23,7 +23,7 @@ read_number_aux(Number,Acc):-
 read_number_aux(Number,Number).
 
 % read_letter(-Number)
-% Reads a lowercase letter from the user input
+% Reads a lowercase letter from the user input and maps it to a number
 read_letter(Number):- 
     read_letter_aux(Number,0).
 

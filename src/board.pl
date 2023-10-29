@@ -7,12 +7,56 @@
 % Draws a horizontal line of size N with the character '-'
 draw_horizontal_line(N) :-
     N > 0,
-    write('-'),
+    write('_'),
     N1 is N - 1,
     draw_horizontal_line(N1).
 draw_horizontal_line(0).
 
-    
+draw_top_half(N) :-
+    N > 0,
+    write(' '),
+    write(' '),
+    write(' '),
+    write('|'),
+    N1 is N - 1,
+    draw_top_half(N1).
+draw_top_half(0).
+
+
+draw_middle_half(Row, ColumnIndex, Columns, Board) :-
+    ColumnIndex < Columns,
+    write(' '),
+    get_piece(Board, Row, ColumnIndex, Piece),
+    write(Piece),
+    write(' '),
+    write('|'),
+    ColumnIndex1 is ColumnIndex + 1,
+    draw_middle_half(Row, ColumnIndex1, Columns, Board).
+draw_middle_half(_, _, _, _).
+
+draw_bottom_half(N) :-
+    N > 0,
+    write('_'),
+    write('_'),
+    write('_'),
+    write('|'),
+    N1 is N - 1,
+    draw_bottom_half(N1).
+draw_bottom_half(0).
+
+display_board(RowIndex, Rows, Columns, Board) :-
+    RowIndex < Rows,  
+    nl,
+    write('|'),
+    draw_top_half(Columns),
+    nl,
+    write('|'),
+    draw_middle_half(RowIndex, 0, Columns, Board),
+    nl,
+    write('|'),
+    draw_bottom_half(Columns),
+    RowIndex1 is RowIndex + 1,
+    display_board(RowIndex1, Rows, Columns, Board).
 
 % create_board(+N, +M, -Board)
 % Creates a board of size N x M

@@ -34,7 +34,7 @@ You can place a disc on any unoccupied square (subject to “perimeter” restri
 
 “Flanked” means an enemy segment flanked between the newly
 placed friendly disc and another friendly disc.<br>
-Disc Flipping happens when flanking occurs. An enemy segment with switch its color when flanked.<br>
+Disc Flipping happens when flanking occurs. An enemy segment will switch its color when flanked.<br>
 If there are 2 segments crossing each other, the segment that was flanked is flipped and turns into the other color and the other segment is **cut**.<br>
 Flanking does not always result in flipping. <br>
 If the longest friendly segment created would be longer than the longest enemy segment cut, then all flanked segments must be flipped. Otherwise no segments are flipped.<br>

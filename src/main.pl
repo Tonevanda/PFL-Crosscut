@@ -5,11 +5,14 @@
 % Prompts the user for the board size
 % then creates a board with the given size
 create_board(info(Board,N,M)) :-
+    repeat,
     write('Please insert the board size: '), nl,
-    write('Rows: '),
+    write('Rows (5-9): '),
     read_number(N),
-    write('Columns: '),
+    N >= 5, N =< 9, 
+    write('Columns (5-9): '),
     read_number(M),
+    M >= 5, M =< 9,
     length(Row, M), % create a row of length M
     maplist(=(' '), Row), % fill the row with empty pieces
     length(Board, N), % create a list of N rows
@@ -32,6 +35,7 @@ gameLoop(State) :-
     display_board,
     nl,
     write(State),
-    move(State),
+    move(State, LineIndex, ColumnIndex),
+    %(check_win(State, LineIndex, ColumnIndex) -> write('WIN'), nl ; true), isto aqui era para ver se check win funcionava, nao podemos usar isto
     get_state(State, NewState),
     gameLoop(NewState).

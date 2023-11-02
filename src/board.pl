@@ -85,18 +85,43 @@ get_piece(Board, I, J, Element) :-
     J >= 0, J < M, % check if the column index is within bounds
     nth0(J, Row, Element), % get the element at index J in the row
     !.
-get_piece(_, _, _, 'Out of bounds'). % if the indices are out of bounds, return 'Out of bounds' message
+get_piece(_, _, _, _):- fail. % if the indices are out of bounds, return 'Out of bounds' message
+
+% get_piece(+Board, +I, +J, +State, +Current)
+% Gets the piece at row I and column J of the board
+get_piece(Board, I, _, Element, Current) :-
+    nth0(I, Board, Row), % get the row at index I
+    nth0(Current, Row, Element). % get the piece at index Current
+
 
 % is_empty(+Board, +I, +J)
 % Checks if the position at row I and column J of the board is empty
 is_empty(Board, I, J) :-
     get_piece(Board, I, J, ' '), !.
 is_empty(_, _, _):- !, fail.
+
+% not_edge(+Board, +I, +J)
+% Checks if the position at row I and column J of the board is not at the edge
+not_edge(Board, I, J) :-
+    length(Board, N), % get the number of rows
+    nth0(I, Board, Row), % get the row at index I
+    length(Row, M), % get the number of columns
+    I > 0, I < N - 1, % check if the row index is not at the edge
+    J > 0, J < M - 1. % check if the column index is not at the edge
+
+
+% valid_move(+Board, +I, +J)
+% Checks if the position at row I and column J of the board is a valid move
+valid_move(Board, I, J) :-
+    is_empty(Board, I, J),
+    not_edge(Board, I, J).
+valid_move(_, _, _):- !, fail.
+
 % place_piece(+Board, +I, +J, +NewPiece, -NewBoard)
 % Places the piece at row I and column J of the board
 place_piece(I, J, NewPiece) :-
     get_info(Board, Rows, Columns),
-    is_empty(Board, I, J),!,
+    valid_move(Board, I, J),!,
     nth0(I, Board, Row), % get the row at index I
     replace(Row, J, NewPiece, NewRow),
     replace(Board, I, NewRow, NewBoard),
@@ -104,7 +129,26 @@ place_piece(I, J, NewPiece) :-
     asserta(info(NewBoard, Rows, Columns)).
 place_piece( _, _, _):- !, fail.
 
-move(State):-
+% check_win(+State)
+% Checks if there is a win condition for the given state
+check_win(State, LineIndex, ColumnIndex) :-
+    get_info(Board, Rows, Columns),
+    nth0(LineIndex, Board, Row),
+    nth0(ColumnIndex, Row, State),
+    check_horizontal(Board, LineIndex, ColumnIndex, State, Columns),
+    check_vertical(Board, LineIndex, ColumnIndex, State, Rows).
+
+% check_horizontal(+Board, +I, +J, +State, +Columns)
+% Checks if there is a continuous horizontal segment from one side of the board to the other
+check_horizontal(Board, I, J, State, Columns) :-
+    my_forall(1, Columns - 2, get_piece(Board, I, J, State)).
+
+% check_vertical(+Board, +I, +J, +State, +Rows)
+% Checks if there is a continuous vertical segment from one side of the board to the other
+check_vertical(Board, I, J, State, Rows) :-
+    my_forall(1, Rows - 2, get_piece(Board, I, J, State)).
+
+move(State, LineIndex, ColumnIndex):-
     repeat,
     write(', select the row:'), nl,
     read_letter(LineIndex),
@@ -113,6 +157,7 @@ move(State):-
     read_number(ColumnIndex),
     clear_buffer,
     place_piece(LineIndex, ColumnIndex, State).
+    
 
 get_state('R', 'B').
 

@@ -1,4 +1,16 @@
-
+% my_forall(+Start, +End, +Goal)
+% Succeeds if Goal holds for all integers between Start and End (inclusive)
+my_forall(Start, End, Goal) :-
+    Start =< End,
+    copy_term(Goal, GoalCopy),
+    GoalCopy =.. [Pred|Args],
+    append(Args, [Start], NewArgs),
+    NewGoal =.. [Pred|NewArgs],
+    call(NewGoal),
+    Next is Start + 1,
+    my_forall(Next, End, Goal).
+my_forall(Start, End, _) :-
+    Start > End.
 
 % replace(+List, +Index, +NewElement, -NewList)
 % Replaces the element at index Index in List with NewElement

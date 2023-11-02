@@ -85,8 +85,7 @@ get_piece(Board, I, J, Element) :-
     J >= 0, J < M, % check if the column index is within bounds
     nth0(J, Row, Element), % get the element at index J in the row
     !.
-get_piece(_, _, _, _):- fail. % if the indices are out of bounds, return 'Out of bounds' message
-
+    
 % get_piece(+Board, +I, +J, +State, +Current)
 % Gets the piece at row I and column J of the board
 get_piece(Board, I, _, Element, Current) :-
@@ -120,23 +119,122 @@ valid_move(_, _, _):- !, fail.
 % place_piece(+Board, +I, +J, +NewPiece, -NewBoard)
 % Places the piece at row I and column J of the board
 place_piece(I, J, NewPiece) :-
-    get_info(Board, Rows, Columns),
-    valid_move(Board, I, J),!,
+    get_info(Board, _, _),
     nth0(I, Board, Row), % get the row at index I
     replace(Row, J, NewPiece, NewRow),
     replace(Board, I, NewRow, NewBoard),
-    retract(info(Board, Rows, Columns)),
-    asserta(info(NewBoard, Rows, Columns)).
+    update_info(NewBoard).
 place_piece( _, _, _):- !, fail.
+
+
+
+flip_left(Ally, LineIndex, ColumnIndex, Board) :-
+    get_piece(Board, LineIndex, ColumnIndex, Ally),
+    update_info(Board),!.
+flip_left(Ally, LineIndex, ColumnIndex, Board) :-
+    ColumnIndex>0,
+    get_state(Ally, Enemy),
+    get_piece(Board, LineIndex, ColumnIndex, Enemy),
+    nth0(LineIndex, Board, Row), % get the row at index I
+    replace(Row, ColumnIndex, Ally, NewRow),
+    replace(Board, LineIndex, NewRow, NewBoard),
+    ColumnIndex1 is ColumnIndex - 1,
+    flip_left(Ally, LineIndex, ColumnIndex1, NewBoard).
+flip_left(_, _, 1, _).
+
+flip_right(Ally, LineIndex, ColumnIndex, Board, _) :-
+    get_piece(Board, LineIndex, ColumnIndex, Ally),
+    update_info(Board),!.
+flip_right(Ally, LineIndex, ColumnIndex, Board, Columns) :-
+    ColumnIndex<Columns,
+    get_state(Ally, Enemy),
+    get_piece(Board, LineIndex, ColumnIndex, Enemy),
+    nth0(LineIndex, Board, Row), % get the row at index I
+    replace(Row, ColumnIndex, Ally, NewRow),
+    replace(Board, LineIndex, NewRow, NewBoard),
+    ColumnIndex1 is ColumnIndex + 1,
+    flip_right(Ally, LineIndex, ColumnIndex1, NewBoard, Columns).
+flip_right(_, _, Columns, _, Columns).
+
+flip_up(Ally, LineIndex, ColumnIndex, Board) :-
+    get_piece(Board, LineIndex, ColumnIndex, Ally),
+    update_info(Board),!.
+flip_up(Ally, LineIndex, ColumnIndex, Board) :-
+    LineIndex>0,
+    get_state(Ally, Enemy),
+    get_piece(Board, LineIndex, ColumnIndex, Enemy),
+    nth0(LineIndex, Board, Row), % get the row at index I
+    replace(Row, ColumnIndex, Ally, NewRow),
+    replace(Board, LineIndex, NewRow, NewBoard),
+    LineIndex1 is LineIndex - 1,
+    flip_up(Ally, LineIndex1, ColumnIndex, NewBoard).
+flip_up(_, _, 1, _).
+
+flip_down(Ally, LineIndex, ColumnIndex, Board, _) :-
+    get_piece(Board, LineIndex, ColumnIndex, Ally),
+    update_info(Board),!.
+flip_down(Ally, LineIndex, ColumnIndex, Board, Rows) :-
+    LineIndex>Rows,
+    get_state(Ally, Enemy),
+    get_piece(Board, LineIndex, ColumnIndex, Enemy),
+    nth0(LineIndex, Board, Row), % get the row at index I
+    replace(Row, ColumnIndex, Ally, NewRow),
+    replace(Board, LineIndex, NewRow, NewBoard),
+    LineIndex1 is LineIndex + 1,
+    flip_down(Ally, LineIndex1, ColumnIndex, NewBoard, Rows).
+flip_down(_, _, Rows, _, Rows).
+
+flip(State, LineIndex, ColumnIndex) :-
+    get_info(Board, _, _),
+    ColumnIndex1 is ColumnIndex - 1,
+    get_state(State, Enemy),
+    get_piece(Board, LineIndex, ColumnIndex1, Enemy),
+    flip_left(State, LineIndex, ColumnIndex1, Board),
+    fail.
+flip(State, LineIndex, ColumnIndex) :-
+    get_info(Board, _, Columns),
+    ColumnIndex1 is ColumnIndex + 1,
+    get_state(State, Enemy),
+    get_piece(Board, LineIndex, ColumnIndex1, Enemy),
+    flip_right(State, LineIndex, ColumnIndex1, Board , Columns),
+    fail.
+flip(State, LineIndex, ColumnIndex) :-
+    get_info(Board, _, _),
+    LineIndex1 is LineIndex - 1,
+    get_state(State, Enemy),
+    get_piece(Board, LineIndex1, ColumnIndex, Enemy),
+    flip_up(State, LineIndex1, ColumnIndex, Board),
+    fail.
+flip(State, LineIndex, ColumnIndex) :-
+    get_info(Board, Rows, _),
+    LineIndex1 is LineIndex + 1,
+    get_state(State, Enemy),
+    get_piece(Board, LineIndex1, ColumnIndex, Enemy),
+    flip_down(State, LineIndex1, ColumnIndex, Board , Rows),
+    fail.
+flip(_,_,_).
+
+
 
 % check_win(+State)
 % Checks if there is a win condition for the given state
 check_win(State, LineIndex, ColumnIndex) :-
     get_info(Board, Rows, Columns),
-    nth0(LineIndex, Board, Row),
-    nth0(ColumnIndex, Row, State),
     check_horizontal(Board, LineIndex, ColumnIndex, State, Columns),
-    check_vertical(Board, LineIndex, ColumnIndex, State, Rows).
+    nl,write(State),
+    write(' horizontal win!'),
+    retractall(info(Board, Rows, Columns)),
+    !.
+
+check_win(State, _, ColumnIndex) :-
+    get_info(Board, Rows, Columns),
+    RowNumber is Rows - 1,
+    check_vertical(Board, 2, ColumnIndex, State, RowNumber),
+    nl,write(State),
+    write(' vertical win!'),
+    retractall(info(Board, Rows, Columns)),
+    !.
+
 
 % check_horizontal(+Board, +I, +J, +State, +Columns)
 % Checks if there is a continuous horizontal segment from one side of the board to the other
@@ -146,17 +244,25 @@ check_horizontal(Board, I, J, State, Columns) :-
 % check_vertical(+Board, +I, +J, +State, +Rows)
 % Checks if there is a continuous vertical segment from one side of the board to the other
 check_vertical(Board, I, J, State, Rows) :-
-    my_forall(1, Rows - 2, get_piece(Board, I, J, State)).
+    I < Rows,
+    get_piece(Board, I, J, State),
+    I1 is I + 1,
+    check_vertical(Board, I1, J, State, Rows).
+check_vertical(_, Rows, _, _, Rows).
 
 move(State, LineIndex, ColumnIndex):-
     repeat,
+    nl,
+    write(State),
     write(', select the row:'), nl,
     read_letter(LineIndex),
     write(State),
     write(', select the column:'), nl,
     read_number(ColumnIndex),
     clear_buffer,
-    place_piece(LineIndex, ColumnIndex, State).
+    get_info(Board, _, _),
+    valid_move(Board, LineIndex, ColumnIndex),
+    place_piece(LineIndex, ColumnIndex, State),!.
     
 
 get_state('R', 'B').

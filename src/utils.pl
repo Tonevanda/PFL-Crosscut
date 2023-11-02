@@ -48,3 +48,7 @@ read_letter_aux(Number,Acc):-
     Acc1 is 26*Acc + (Character - 97),
     read_letter_aux(Number,Acc1).
 read_letter_aux(Number,Number).
+
+update_info(Board) :-
+    retractall(info(_, Rows, Columns)),
+    asserta(info(Board, Rows, Columns)).

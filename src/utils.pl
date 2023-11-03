@@ -49,6 +49,6 @@ read_letter_aux(Number,Acc):-
     read_letter_aux(Number,Acc1).
 read_letter_aux(Number,Number).
 
-update_info(Board) :-
-    retractall(info(_, Rows, Columns)),
-    asserta(info(Board, Rows, Columns)).
+update_gameState(Board) :-
+    retractall(gameState(_, Rows, Columns)),
+    asserta(gameState(Board, Rows, Columns)).

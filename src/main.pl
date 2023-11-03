@@ -20,25 +20,20 @@ create_board(info(Board,N,M)) :-
 
 % Predicate to start the game
 play :-
-    retractall(info(_)),
+    %retractall(info(_)),
     %clear_buffer,
     create_board(Struct),
     %create_board(Struct),
     asserta(Struct),
     display_board,!,
     gameLoop('R').
-    %create_board(5, 5, Board),
-    %info('R',Board,5,5),
-    %gameLoop('R', 5, 5, Board).
-    %get_piece(Board, 1, 1, Element),
-    %write(Element), nl.
 
 
 gameLoop(State) :- 
-    
     move(State, LineIndex, ColumnIndex),
     flip(State, LineIndex, ColumnIndex),
     display_board,!,
+    
     \+check_win(State, LineIndex, ColumnIndex), %isto aqui era para ver se check win funcionava, nao podemos usar isto
     get_state(State, NewState),
     gameLoop(NewState).

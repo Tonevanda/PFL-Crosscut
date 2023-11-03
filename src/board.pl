@@ -114,7 +114,6 @@ not_edge(Board, I, J) :-
 valid_move(Board, I, J) :-
     is_empty(Board, I, J),
     not_edge(Board, I, J).
-valid_move(_, _, _):- !, fail.
 
 % place_piece(+Board, +I, +J, +NewPiece, -NewBoard)
 % Places the piece at row I and column J of the board
@@ -124,7 +123,6 @@ place_piece(I, J, NewPiece) :-
     replace(Row, J, NewPiece, NewRow),
     replace(Board, I, NewRow, NewBoard),
     update_info(NewBoard).
-place_piece( _, _, _):- !, fail.
 
 
 
@@ -213,8 +211,12 @@ flip(State, LineIndex, ColumnIndex) :-
     flip_down(State, LineIndex1, ColumnIndex, Board , Rows),
     fail.
 flip(_,_,_).
-
-
+/*
+flip_check_vertical().
+flip_check_vertical().
+flip_check_horizontal().
+flip_check_horizontal().
+*/
 
 % check_win(+State)
 % Checks if there is a win condition for the given state

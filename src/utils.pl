@@ -50,5 +50,5 @@ read_letter_aux(Number,Acc):-
 read_letter_aux(Number,Number).
 
 update_info(Board) :-
-    retractall(info(_, Rows, Columns)),
+    retract(info(_, Rows, Columns)),nl,
     asserta(info(Board, Rows, Columns)).

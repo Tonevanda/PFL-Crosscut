@@ -109,12 +109,16 @@ not_edge(Board, I, J) :-
     J > 0, J < M - 1. % check if the column index is not at the edge
 
 
-% valid_move(+Board, +I, +J)
-% Checks if the position at row I and column J of the board is a valid move
-valid_move(Board, I, J) :-
+% validate_move(+Board, +I, +J)
+% Checks if the position at the edge results in a disc flip
+validate_move(Board, I, J,State) :-
     is_empty(Board, I, J),
-    not_edge(Board, I, J).
-valid_move(_, _, _):- !, fail.
+    \+not_edge(Board, I, J), % check if the position is at the edge
+    flip(State, I, J),!.
+validate_move(Board, I, J,State) :-
+    is_empty(Board, I, J),
+    not_edge(Board, I, J),
+    place_piece(I, J, State). % place the piece at the position
 
 % place_piece(+Board, +I, +J, +NewPiece, -NewBoard)
 % Places the piece at row I and column J of the board
@@ -261,8 +265,7 @@ move(State, LineIndex, ColumnIndex):-
     read_number(ColumnIndex),
     clear_buffer,
     get_info(Board, _, _),
-    valid_move(Board, LineIndex, ColumnIndex),
-    place_piece(LineIndex, ColumnIndex, State),!.
+    validate_move(Board, LineIndex, ColumnIndex,State),!.
     
 
 get_state('R', 'B').

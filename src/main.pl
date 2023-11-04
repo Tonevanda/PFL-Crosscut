@@ -1,39 +1,40 @@
 :- consult('board.pl').
 
 
-% create_board(-Rows, -Columns)
-% Prompts the user for the board size
-% then creates a board with the given size
-create_board(info(Board,N,M)) :-
+
+
+read_input(Rows-Columns):-
     repeat,
     write('Please insert the board size: '), nl,
     write('Rows (5-9): '),
-    read_number(N),
-    N >= 5, N =< 9, 
+    read_number(Rows),
+    Rows >= 5, Rows =< 9, 
     write('Columns (5-9): '),
-    read_number(M),
-    M >= 5, M =< 9,
-    length(Row, M), % create a row of length M
+    read_number(Columns),
+    Rows >= 5, Rows =< 9.
+
+
+% create_board(-Rows, -Columns)
+% Prompts the user for the board size
+% then creates a board with the given size
+initial_state(Rows-Columns,gameState(Board,Rows,Columns)) :-
+    length(Row, Columns), % create a row of length M
     maplist(=(' '), Row), % fill the row with empty pieces
-    length(Board, N), % create a list of N rows
+    length(Board, Rows), % create a list of N rows
     maplist(=(Row), Board). % fill the list with the row
 
 % Predicate to start the game
 play :-
-    %retractall(info(_)),
-    %clear_buffer,
-    create_board(Struct),
-    %create_board(Struct),
-    asserta(Struct),
+    read_input(Size),
+    initial_state(Size,GameState),
+    asserta(GameState),
     display_board,!,
     gameLoop('R').
 
-
 gameLoop(State) :- 
     move(State, LineIndex, ColumnIndex),
-    flip(State, LineIndex, ColumnIndex),
+    %flip(State, LineIndex, ColumnIndex),
     display_board,!,
-    
     \+check_win(State, LineIndex, ColumnIndex), %isto aqui era para ver se check win funcionava, nao podemos usar isto
     get_state(State, NewState),
     gameLoop(NewState).

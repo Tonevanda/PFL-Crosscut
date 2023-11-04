@@ -2,7 +2,7 @@
 
 :- use_module(library(lists)).
 :- consult('utils.pl').
-:- dynamic info/3.
+:- dynamic gameState/3.
 
 clear_buffer:-
 	repeat,
@@ -10,8 +10,8 @@ clear_buffer:-
 	C='\n',
 	!.
 
-get_info(Board, Rows, Columns) :-
-    info(Board, Rows, Columns).
+get_game_state(Board, Rows, Columns) :-
+    gameState(Board, Rows, Columns).
 % draw_horizontal_line(+N)
 % Draws a horizontal line of size N with the character '-'
 draw_horizontal_line(N) :-
@@ -32,7 +32,7 @@ draw_top_half(N) :-
 draw_top_half(0).
 
 draw_middle_half(Row, ColumnIndex) :-
-    info(Board,_,Columns),
+    get_game_state(Board,_,Columns),
     ColumnIndex < Columns,
     write(' '),
     get_piece(Board, Row, ColumnIndex, Piece),
@@ -54,7 +54,7 @@ draw_bottom_half(N) :-
 draw_bottom_half(0).
 
 display_board :-
-    get_info(Board, Rows, Columns),
+    get_game_state(Board, Rows, Columns),
     write(' '),
     Columns1 is Columns * 3 + Columns-1,
     draw_horizontal_line(Columns1),
@@ -109,32 +109,44 @@ not_edge(Board, I, J) :-
     J > 0, J < M - 1. % check if the column index is not at the edge
 
 
-% validate_move(+Board, +I, +J)
-% Checks if the position at the edge results in a disc flip
+
+
+
 validate_move(Board, I, J,State) :-
     is_empty(Board, I, J),
-    \+not_edge(Board, I, J), % check if the position is at the edge
-    flip(State, I, J),!.
+    \+not_edge(Board, I, J),!, % check if the position is at the edge´
+    flip(Board, State, I, J, NewBoard),
+    write('piece was atempted to be placed on edge'),nl, 
+    update_game_state(NewBoard).
+
 validate_move(Board, I, J,State) :-
     is_empty(Board, I, J),
     not_edge(Board, I, J),
-    place_piece(I, J, State). % place the piece at the position
+    place_piece(Board, I, J, State, NewBoard),
+    write('not on an edge'),nl,
+    update_game_state(NewBoard),
+    flip(NewBoard, State, I, J, NewestBoard),
+    update_game_state(NewestBoard).
 
+validate_move(Board, I, J,State) :-
+    is_empty(Board, I, J),
+    not_edge(Board, I, J),
+    place_piece(Board, I, J, State, NewBoard),
+    write('not on an edge'),nl,
+    update_game_state(NewBoard).
+    
 % place_piece(+Board, +I, +J, +NewPiece, -NewBoard)
 % Places the piece at row I and column J of the board
-place_piece(I, J, NewPiece) :-
-    get_info(Board, _, _),
+place_piece(Board,I, J, NewPiece,NewBoard) :-
     nth0(I, Board, Row), % get the row at index I
     replace(Row, J, NewPiece, NewRow),
-    replace(Board, I, NewRow, NewBoard),
-    update_info(NewBoard).
+    replace(Board, I, NewRow, NewBoard).
 
 
 
-flip_left(Ally, LineIndex, ColumnIndex, Board) :-
-    get_piece(Board, LineIndex, ColumnIndex, Ally),
-    update_info(Board),!.
-flip_left(Ally, LineIndex, ColumnIndex, Board) :-
+flip_left(Ally, LineIndex, ColumnIndex, Board, Board) :-
+    get_piece(Board, LineIndex, ColumnIndex, Ally).
+flip_left(Ally, LineIndex, ColumnIndex, Board, NewestBoard) :-
     ColumnIndex>0,
     get_state(Ally, Enemy),
     get_piece(Board, LineIndex, ColumnIndex, Enemy),
@@ -142,13 +154,12 @@ flip_left(Ally, LineIndex, ColumnIndex, Board) :-
     replace(Row, ColumnIndex, Ally, NewRow),
     replace(Board, LineIndex, NewRow, NewBoard),
     ColumnIndex1 is ColumnIndex - 1,
-    flip_left(Ally, LineIndex, ColumnIndex1, NewBoard).
-flip_left(_, _, 1, _).
+    flip_left(Ally, LineIndex, ColumnIndex1, NewBoard, NewestBoard).
 
-flip_right(Ally, LineIndex, ColumnIndex, Board, _) :-
+flip_right(Ally, LineIndex, ColumnIndex, Board, _, Board) :-
     get_piece(Board, LineIndex, ColumnIndex, Ally),
-    update_info(Board),!.
-flip_right(Ally, LineIndex, ColumnIndex, Board, Columns) :-
+    update_game_state(Board),!.
+flip_right(Ally, LineIndex, ColumnIndex, Board, Columns, NewestBoard) :-
     ColumnIndex<Columns,
     get_state(Ally, Enemy),
     get_piece(Board, LineIndex, ColumnIndex, Enemy),
@@ -156,13 +167,12 @@ flip_right(Ally, LineIndex, ColumnIndex, Board, Columns) :-
     replace(Row, ColumnIndex, Ally, NewRow),
     replace(Board, LineIndex, NewRow, NewBoard),
     ColumnIndex1 is ColumnIndex + 1,
-    flip_right(Ally, LineIndex, ColumnIndex1, NewBoard, Columns).
-flip_right(_, _, Columns, _, Columns).
+    flip_right(Ally, LineIndex, ColumnIndex1, NewBoard, Columns, NewestBoard).
 
-flip_up(Ally, LineIndex, ColumnIndex, Board) :-
+flip_up(Ally, LineIndex, ColumnIndex, Board, Board) :-
     get_piece(Board, LineIndex, ColumnIndex, Ally),
-    update_info(Board),!.
-flip_up(Ally, LineIndex, ColumnIndex, Board) :-
+    update_game_state(Board),!.
+flip_up(Ally, LineIndex, ColumnIndex, Board, NewestBoard) :-
     LineIndex>0,
     get_state(Ally, Enemy),
     get_piece(Board, LineIndex, ColumnIndex, Enemy),
@@ -170,13 +180,13 @@ flip_up(Ally, LineIndex, ColumnIndex, Board) :-
     replace(Row, ColumnIndex, Ally, NewRow),
     replace(Board, LineIndex, NewRow, NewBoard),
     LineIndex1 is LineIndex - 1,
-    flip_up(Ally, LineIndex1, ColumnIndex, NewBoard).
-flip_up(_, _, 1, _).
+    flip_up(Ally, LineIndex1, ColumnIndex, NewBoard, NewestBoard).
 
-flip_down(Ally, LineIndex, ColumnIndex, Board, _) :-
+
+flip_down(Ally, LineIndex, ColumnIndex, Board, _, Board) :-
     get_piece(Board, LineIndex, ColumnIndex, Ally),
-    update_info(Board),!.
-flip_down(Ally, LineIndex, ColumnIndex, Board, Rows) :-
+    update_game_state(Board),!.
+flip_down(Ally, LineIndex, ColumnIndex, Board, Rows, NewestBoard) :-
     LineIndex>Rows,
     get_state(Ally, Enemy),
     get_piece(Board, LineIndex, ColumnIndex, Enemy),
@@ -184,62 +194,56 @@ flip_down(Ally, LineIndex, ColumnIndex, Board, Rows) :-
     replace(Row, ColumnIndex, Ally, NewRow),
     replace(Board, LineIndex, NewRow, NewBoard),
     LineIndex1 is LineIndex + 1,
-    flip_down(Ally, LineIndex1, ColumnIndex, NewBoard, Rows).
-flip_down(_, _, Rows, _, Rows).
+    flip_down(Ally, LineIndex1, ColumnIndex, NewBoard, Rows, NewestBoard).
 
-flip(State, LineIndex, ColumnIndex) :-
-    get_info(Board, _, _),
+flip(Board, State, LineIndex, ColumnIndex, NewBoard) :-
     ColumnIndex1 is ColumnIndex - 1,
     get_state(State, Enemy),
     get_piece(Board, LineIndex, ColumnIndex1, Enemy),
-    flip_left(State, LineIndex, ColumnIndex1, Board),
-    fail.
-flip(State, LineIndex, ColumnIndex) :-
-    get_info(Board, _, Columns),
+    flip_left(State, LineIndex, ColumnIndex1, Board, NewBoard).
+
+flip(Board, State, LineIndex, ColumnIndex, NewBoard) :-
+    get_game_state(_, _, Columns),
     ColumnIndex1 is ColumnIndex + 1,
     get_state(State, Enemy),
     get_piece(Board, LineIndex, ColumnIndex1, Enemy),
-    flip_right(State, LineIndex, ColumnIndex1, Board , Columns),
-    fail.
-flip(State, LineIndex, ColumnIndex) :-
-    get_info(Board, _, _),
+    flip_right(State, LineIndex, ColumnIndex1, Board, Columns, NewBoard).
+flip(Board, State, LineIndex, ColumnIndex, NewBoard) :-
     LineIndex1 is LineIndex - 1,
     get_state(State, Enemy),
     get_piece(Board, LineIndex1, ColumnIndex, Enemy),
-    flip_up(State, LineIndex1, ColumnIndex, Board),
-    fail.
-flip(State, LineIndex, ColumnIndex) :-
-    get_info(Board, Rows, _),
+    flip_up(State, LineIndex1, ColumnIndex, Board, NewBoard).
+flip(Board, State, LineIndex, ColumnIndex, NewBoard) :-
+    get_game_state(_, Rows, _),
     LineIndex1 is LineIndex + 1,
     get_state(State, Enemy),
     get_piece(Board, LineIndex1, ColumnIndex, Enemy),
-    flip_down(State, LineIndex1, ColumnIndex, Board , Rows),
-    fail.
-flip(_,_,_).
+    flip_down(State, LineIndex1, ColumnIndex, Board , Rows, NewBoard).
+flip(Board,_,_,_,Board):-write('nuhuh'),fail.
 /*
 flip_check_vertical().
 flip_check_vertical().
 flip_check_horizontal().
 flip_check_horizontal().
 */
-
 % check_win(+State)
 % Checks if there is a win condition for the given state
 check_win(State, LineIndex, ColumnIndex) :-
-    get_info(Board, Rows, Columns),
+    get_game_state(Board, Rows, Columns),
     check_horizontal(Board, LineIndex, ColumnIndex, State, Columns),
     nl,write(State),
     write(' horizontal win!'),
-    retractall(info(Board, Rows, Columns)),
+    retractall(gameState(Board, Rows, Columns)),
     !.
 
 check_win(State, _, ColumnIndex) :-
-    get_info(Board, Rows, Columns),
+    get_game_state(Board, Rows, Columns),
     RowNumber is Rows - 1,
-    check_vertical(Board, 2, ColumnIndex, State, RowNumber),
+    check_vertical(Board, 1, ColumnIndex, State, RowNumber),
+    write(Board),
     nl,write(State),
     write(' vertical win!'),
-    retractall(info(Board, Rows, Columns)),
+    retractall(gameState(Board, Rows, Columns)),
     !.
 
 
@@ -253,6 +257,12 @@ check_horizontal(Board, I, J, State, Columns) :-
 check_vertical(Board, I, J, State, Rows) :-
     I < Rows,
     get_piece(Board, I, J, State),
+    write(State),
+    write(' found at: Row '),
+    write(I),
+    write(',Collumn '),
+    write(J),
+    nl,
     I1 is I + 1,
     check_vertical(Board, I1, J, State, Rows).
 check_vertical(_, Rows, _, _, Rows).
@@ -266,11 +276,9 @@ move(State, LineIndex, ColumnIndex):-
     write(State),
     write(', select the column:'), nl,
     read_number(ColumnIndex),
-    clear_buffer,
-    get_info(Board, _, _),
-    validate_move(Board, LineIndex, ColumnIndex,State),!.
+    get_game_state(Board, _, _),
+    validate_move(Board, LineIndex, ColumnIndex, State),!.
     
-
 get_state('R', 'B').
 
 get_state('B', 'R').

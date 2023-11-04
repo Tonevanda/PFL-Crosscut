@@ -52,3 +52,9 @@ read_letter_aux(Number,Number).
 update_game_state(Board) :-
     retract(gameState(_, Rows, Columns)),
     asserta(gameState(Board, Rows, Columns)).
+
+clear_buffer:-
+	repeat,
+	get_char(C),
+	C='\n',
+	!.

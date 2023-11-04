@@ -1,6 +1,5 @@
 :- consult('board.pl').
 
-
 read_input(Rows-Columns):-
     repeat,
     write('Please insert the board size: '), nl,
@@ -12,17 +11,14 @@ read_input(Rows-Columns):-
     Rows >= 5, Rows =< 9.
 
 
-% create_board(-Rows, -Columns)
-% Prompts the user for the board size
-% then creates a board with the given size
+
 initial_state(Rows-Columns,gameState(Board,Rows,Columns)) :-
     length(Row, Columns), % create a row of length M
     maplist(=(' '), Row), % fill the row with empty pieces
     length(Board, Rows), % create a list of N rows
     maplist(=(Row), Board). % fill the list with the row
 
-% check_win(+State)
-% Checks if there is a win condition for the given state
+
 check_win(State, LineIndex, ColumnIndex) :-
     get_game_state(Board, Rows, Columns),
     check_horizontal(Board, LineIndex, ColumnIndex, State, Columns),
@@ -42,13 +38,10 @@ check_win(State, _, ColumnIndex) :-
     !.
 
 
-% check_horizontal(+Board, +I, +J, +State, +Columns)
-% Checks if there is a continuous horizontal segment from one side of the board to the other
 check_horizontal(Board, I, J, State, Columns) :-
     my_forall(1, Columns - 2, get_piece(Board, I, J, State)).
 
-% check_vertical(+Board, +I, +J, +State, +Rows)
-% Checks if there is a continuous vertical segment from one side of the board to the other
+
 check_vertical(Board, I, J, State, Rows) :-
     I < Rows,
     get_piece(Board, I, J, State),
@@ -72,7 +65,8 @@ move(State, LineIndex, ColumnIndex):-
     write(', select the column:'), nl,
     read_number(ColumnIndex),
     get_game_state(Board, _, _),
-    validate_move(Board, LineIndex, ColumnIndex, State),!.
+    validate_move(Board, LineIndex, ColumnIndex, State, NewBoard),
+    update_game_state(NewBoard), !.
     
 get_state('R', 'B').
 
@@ -89,7 +83,8 @@ play :-
 gameLoop(State) :- 
     move(State, LineIndex, ColumnIndex),
     %flip(State, LineIndex, ColumnIndex),
-    display_board,!,
-    \+check_win(State, LineIndex, ColumnIndex), %isto aqui era para ver se check win funcionava, nao podemos usar isto
+    display_board,
+    !, % cut to avoid backtracking
+    \+check_win(State, LineIndex, ColumnIndex), % if there is no win condition, continue the game
     get_state(State, NewState),
     gameLoop(NewState).

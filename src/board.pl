@@ -3,6 +3,7 @@
 :- use_module(library(lists)).
 :- consult('utils.pl').
 :- consult('flip.pl').
+:- consult('computer.pl').
 :- dynamic gameState/3.
 
 get_game_state(Board, Rows, Columns) :-
@@ -87,6 +88,12 @@ get_piece(Board, I, _, Element, Current) :-
     nth0(I, Board, Row), % get the row at index I
     nth0(Current, Row, Element). % get the piece at index Current
 
+% place_piece(+Board, +I, +J, +NewPiece, -NewBoard)
+% Places the piece at row I and column J of the board
+place_piece(Board,I, J, NewPiece,NewBoard) :-
+    nth0(I, Board, Row), % get the row at index I
+    replace(Row, J, NewPiece, NewRow),
+    replace(Board, I, NewRow, NewBoard).
 
 % is_empty(+Board, +I, +J)
 % Checks if the position at row I and column J of the board is empty
@@ -103,40 +110,50 @@ not_edge(Board, I, J) :-
     I > 0, I < N - 1, % check if the row index is not at the edge
     J > 0, J < M - 1. % check if the column index is not at the edge
 
+% better_valid_moves(+Board, +PlayerPiece, -ListOfMoves)
+% Generates a list of all valid moves for the player that do not result in a win condition for the opponent
+better_valid_moves(Board, PlayerPiece, ListOfMoves):-
+    opponent(PlayerPiece, OpponentPiece),
+    findall(I-J, (validate_move(Board, I, J), \+results_in_win(Board, I, J, OpponentPiece)), ListOfMoves).
 
-valid_moves(State, Player, ValidMoves) :-
-    get_game_state(Board, Rows, Columns),
-    valid_moves_aux(Board, Rows, Columns, State, 0, 0, ValidMoves).
+% results_in_win(+Board, +I, +J, +Piece)
+% Checks if the move to the position at row I and column J of the board results in a win condition for the given piece
+results_in_win(Board, I, J, Piece) :-
+    copy_term(Board, TempBoard),
+    place_piece(TempBoard, I, J, Piece),
+    check_win(TempBoard, I, J, Piece).
 
+% valid_move(+Board, +AILevel, -ListOfMoves)
+% Generates a list of all valid moves for the easy AI
+valid_moves(Board, '1', ListOfMoves):-
+    findall(I-J, validate_move(Board, I, J), ListOfMoves).
 
-validate_move(Board, I, J,State) :-
+% valid_move(+Board, +AILevel, -ListOfMoves)
+% Generates a list of all valid moves for the hard AI
+%valid_moves(Board, '2', ListOfMoves):-
+    %...
+
+% validate_move(+Board,+I, +J, +State)
+% Checks if it is an edge move results in disc flipping
+validate_move(Board, I, J,State, NewBoard) :-
     is_empty(Board, I, J),
-    \+not_edge(Board, I, J),!, % check if the position is at the edge´
-    flip(Board, State, I, J, NewBoard),
-    write('piece was atempted to be placed on edge'),nl, 
-    update_game_state(NewBoard).
+    \+not_edge(Board, I, J),!, % check if the position is at the edge
+    flip(Board, State, I, J, NewBoard),nl,
+    write('Piece was attempted to be placed on edge'),nl.
 
-validate_move(Board, I, J,State) :-
+% validate_move(+Board,+I, +J, +State)
+% Checks if it is not an edge move and results in flipping 
+validate_move(Board, I, J,State, NewestBoard) :-
     is_empty(Board, I, J),
     not_edge(Board, I, J),
-    place_piece(Board, I, J, State, NewBoard),
-    write('not on an edge'),nl,
-    update_game_state(NewBoard),
-    flip(NewBoard, State, I, J, NewestBoard),
-    update_game_state(NewestBoard).
+    place_piece(Board, I, J, State, NewBoard),nl,
+    write('Not on an edge'),nl,
+    flip(NewBoard, State, I, J, NewestBoard),!.
 
-validate_move(Board, I, J,State) :-
+% validate_move(+Board,+I, +J, +State)
+% Checks if it is not an edge move
+validate_move(Board, I, J,State, NewBoard) :-
     is_empty(Board, I, J),
     not_edge(Board, I, J),
-    place_piece(Board, I, J, State, NewBoard),
-    write('not on an edge'),nl,
-    update_game_state(NewBoard).
-    
-% place_piece(+Board, +I, +J, +NewPiece, -NewBoard)
-% Places the piece at row I and column J of the board
-place_piece(Board,I, J, NewPiece,NewBoard) :-
-    nth0(I, Board, Row), % get the row at index I
-    replace(Row, J, NewPiece, NewRow),
-    replace(Board, I, NewRow, NewBoard).
-
-
+    place_piece(Board, I, J, State, NewBoard),nl,
+    write('Not on an edge'),nl.

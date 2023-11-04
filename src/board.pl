@@ -108,34 +108,28 @@ not_edge(Board, I, J) :-
     I > 0, I < N - 1, % check if the row index is not at the edge
     J > 0, J < M - 1. % check if the column index is not at the edge
 
-
-valid_moves(State, Player, ValidMoves) :-
-    get_game_state(Board, Rows, Columns),
+/*
+valid_moves(gameState(Board,Rows,Columns), Player, ValidMoves) :-
     valid_moves_aux(Board, Rows, Columns, State, 0, 0, ValidMoves).
-
-
-validate_move(Board, I, J,State) :-
+*/
+validate_move(Board, I, J,State, NewBoard) :-
     is_empty(Board, I, J),
     \+not_edge(Board, I, J),!, % check if the position is at the edge´
     flip(Board, State, I, J, NewBoard),
-    write('piece was atempted to be placed on edge'),nl, 
-    update_game_state(NewBoard).
+    write('piece was atempted to be placed on edge'),nl.
 
-validate_move(Board, I, J,State) :-
+validate_move(Board, I, J,State, NewestBoard) :-
     is_empty(Board, I, J),
     not_edge(Board, I, J),
     place_piece(Board, I, J, State, NewBoard),
     write('not on an edge'),nl,
-    update_game_state(NewBoard),
-    flip(NewBoard, State, I, J, NewestBoard),
-    update_game_state(NewestBoard).
+    flip(NewBoard, State, I, J, NewestBoard),!.
 
-validate_move(Board, I, J,State) :-
+validate_move(Board, I, J,State, NewBoard) :-
     is_empty(Board, I, J),
     not_edge(Board, I, J),
     place_piece(Board, I, J, State, NewBoard),
-    write('not on an edge'),nl,
-    update_game_state(NewBoard).
+    write('not on an edge'),nl.
     
 % place_piece(+Board, +I, +J, +NewPiece, -NewBoard)
 % Places the piece at row I and column J of the board
@@ -337,7 +331,9 @@ move(State, LineIndex, ColumnIndex):-
     write(', select the column:'), nl,
     read_number(ColumnIndex),
     get_game_state(Board, _, _),
-    validate_move(Board, LineIndex, ColumnIndex, State),!.
+    validate_move(Board, LineIndex, ColumnIndex, State, NewBoard),
+    update_game_state(NewBoard),
+    !.
     
 get_state('R', 'B').
 

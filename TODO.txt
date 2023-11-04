@@ -8,9 +8,11 @@ Prevenir boards menores que 5 por 5, têm que ser entre 5x5 e 9x9 DONE
 Primeiro devemos prevenir sempre colocar discs nas edges DONE
 Fazer um predicado is_valid_move() que checka se está empty e se não está nas edges DONE
 Depois fazemos um check_win() que checka se um player ganhou o jogo aka segmento de um lado ao outro exceto as edges DONE FALTA METER O JOGO A ACABAR
-Agora devemos começar a implementar disc flipping
-Primeiro fazemos com que todos os flanks resultem em flipping do segmento que está no meio
-Agora podemos fazer com que dê para colocar discs nas edges se resultar num flip, mas não deixar o disc na edge
+Agora devemos começar a implementar disc flipping DONE
+Primeiro fazemos com que todos os flanks resultem em flipping do segmento que está no meio DONE
+Agora podemos fazer com que dê para colocar discs nas edges se resultar num flip, mas não deixar o disc na edge DONE
+
+FALTA SÓ A PARTIR DAQUI!!
 Por último, fazer a regra dos cuts, em que nem todos os flanks resultam em flips
 
 -------AI----------

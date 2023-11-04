@@ -11,9 +11,7 @@ Depois fazemos um check_win() que checka se um player ganhou o jogo aka segmento
 Agora devemos começar a implementar disc flipping DONE
 Primeiro fazemos com que todos os flanks resultem em flipping do segmento que está no meio DONE
 Agora podemos fazer com que dê para colocar discs nas edges se resultar num flip, mas não deixar o disc na edge DONE
-
-FALTA SÓ A PARTIR DAQUI!!
-Por último, fazer a regra dos cuts, em que nem todos os flanks resultam em flips
+Por último, fazer a regra dos cuts, em que nem todos os flanks resultam em flips DONE i think
 
 -------AI----------
 

@@ -52,6 +52,10 @@ valid_moves(Board, '2', Piece, ListOfMoves):- %dependo do flow do codigo talvez 
         NewValue < InitialValue
         ), ListOfMoves). % Se NewValue < InitialValue, então quer dizer que a diferença entre o maior segmento e o tamanho necessário para ganhar diminuiu, então o movimento é bom
 
+better_valid_moves(Board, Piece, ListOfMoves):-
+    get_state(Piece, Enemy),
+    findall(I-J, (validate_move(Board, I, J), \+results_in_win(Board, I, J, Enemy)), ListOfMoves).
+
 % results_in_win(+Board, +I, +J, +Piece)
 % Checks if the move to the position at row I and column J of the board results in a win condition for the given piece
 results_in_win(Board, I, J, Piece) :-
@@ -59,12 +63,14 @@ results_in_win(Board, I, J, Piece) :-
     place_piece(TempBoard, I, J, Piece),
     check_win(TempBoard, I, J, Piece).
 
-% choose_move(+Piece, +AILevel, -Move)
+% choose_move(+Board, +Piece, +AILevel, -Move)
 % Chooses a move for the AI
-choose_move(Piece, Level, Move):-
-    valid_moves(Piece, Level, ListOfMoves),
+choose_move(Board, Piece, Level, Move):- %Se falhar quer dizer que ListOfMoves é vazia, pode ser necessário fazer uma cena que acabe o jogo se nao der para fazer mais movimentos, mas nao sei se é possivel neste jogo acabar em draw
+    valid_moves(Board, Piece, Level, ListOfMoves),
     random_member(Move, ListOfMoves).
-choose_move(Piece, '2', []):-
-    get_state(Piece, Enemy),
-    findall(I-J, (validate_move(Board, I, J, _NewBoard), \+results_in_win(Board,I,J,Enemy)), ListOfMoves),
+
+% Apercebi-me agora que esta forma é meia à bruta, porque se não encontrar um movimento que aumente o maior segmento, vai escolher um movimento aleatório, mas tecnicamente a melhor jogada possível seria tentar aumentar o segundo maior segmento, seria muito mais dificil fazer isso tho acho
+% Para fazermos essa de depois meter no segundo melhor ig que teriamos que mudar o find_longest_segment todo para ele retornar uma lista sorted por tamanho de segmento, e depois era so ir buscar o segundo elemento da lista e por ai fora até funcionar, se nunca conseguir então acaba por escolher um movimento aleatório
+choose_move(Board, Piece, '2', Move):- %Só entra neste caso o de cima falhar, ou seja ListOfMoves está vazia, que em princípio só acontece quando o hard AI não consegue encontrar um movimento que aumente o seu maior segmento
+    better_valid_moves(Board, Piece, ListOfMoves), 
     random_member(Move, ListOfMoves).

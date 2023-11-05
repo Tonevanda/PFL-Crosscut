@@ -53,6 +53,15 @@ update_game_state(Board) :-
     retract(gameState(_, Rows, Columns)),
     asserta(gameState(Board, Rows, Columns)).
 
+% between(+Low, +High, ?Value)
+% True if Value is between Low and High, inclusive.
+between(Low, High, Low) :- 
+    Low =< High.
+between(Low, High, Value) :- 
+    Low < High, 
+    NewLow is Low + 1, 
+    my_between(NewLow, High, Value).
+
 clear_buffer:-
 	repeat,
 	get_char(C),

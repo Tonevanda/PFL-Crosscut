@@ -104,10 +104,10 @@ flip_up(Ally, LineIndex, ColumnIndex, Board, NewestBoard, Longest, Acumulator) :
 
 flip_down(Ally, LineIndex, ColumnIndex, Board, _, Board, Longest, Acumulator) :-
     get_piece(Board, LineIndex, ColumnIndex, Ally),!,
-    Acumulator > Longest.
-flip_down(Ally, LineIndex, ColumnIndex, Board, Rows, NewestBoard, Longest, Acumulator) :-
-    LineIndex>Rows,
-    get_state(Ally, Enemy),
+    Accumulator > Longest.
+flip_down(Ally, LineIndex, ColumnIndex, Board, Rows, NewestBoard, Longest, Accumulator) :-
+    LineIndex<Rows,
+    get_state(Ally, Enemy, _),
     get_piece(Board, LineIndex, ColumnIndex, Enemy),
     flip_check_horizontal(Board, Enemy, LineIndex, ColumnIndex, Longest, Longestoutput),
     nth0(LineIndex, Board, Row), % get the row at index I

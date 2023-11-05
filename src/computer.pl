@@ -35,11 +35,23 @@ value(Board, Piece, Value) :-
     VerticalValue is min(LongestVertical, Rows - 2),
     Value is min(HorizontalValue, VerticalValue).
 
+
+% valid_moves(+Piece, +AILevel, -ListOfMoves)
+% Finds all valid moves for the AI
+valid_moves(Board, Piece, 1, ListOfMoves) :-
+    get_game_state(Board, Rows, Columns,_,_),
+    Rows1 is Rows-1,
+    Columns1 is Columns-1,
+    findall(I-J, (between(1, Rows1, I), between(1, Columns1, J), validate_move(Board, I-J, Piece, _)), ListOfMoves).
+/*
 % valid_move(+Board, +AILevel, +Piece, -ListOfMoves)
 % Generates a list of all valid moves for the easy AI
-valid_moves(Board, '1', _Piece, ListOfMoves):-
-    findall(I-J, validate_move(Board, I, J, _NewBoard), ListOfMoves).
-
+valid_moves(Board, Piece, 1, ListOfMoves):-
+    validate_move(Board, I-J, Piece, _),
+    append(ListOfMoves, [I-J], ListOfMoves),
+    %findall(I-J, validate_move(Board, I-J, Piece, _), ListOfMoves),
+    write(ListOfMoves), nl.
+*/
 % valid_move(+Board, +AILevel, +Piece, -ListOfMoves)
 % Generates a list of all valid moves for the hard AI
 valid_moves(Board, '2', Piece, ListOfMoves):- %dependo do flow do codigo talvez nao seja preciso passar piece e é so preciso chamar get_state

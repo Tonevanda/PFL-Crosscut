@@ -50,8 +50,8 @@ read_letter_aux(Number,Acc):-
 read_letter_aux(Number,Number).
 
 update_game_state(Board) :-
-    retract(gameState(_, Rows, Columns)),
-    asserta(gameState(Board, Rows, Columns)).
+    retract(gameState(_, Rows, Columns,BlueLevel,RedLevel)),
+    asserta(gameState(Board, Rows, Columns,BlueLevel,RedLevel)).
 
 % between(+Low, +High, ?Value)
 % True if Value is between Low and High, inclusive.
@@ -60,7 +60,7 @@ between(Low, High, Low) :-
 between(Low, High, Value) :- 
     Low < High, 
     NewLow is Low + 1, 
-    my_between(NewLow, High, Value).
+    between(NewLow, High, Value).
 
 clear_buffer:-
 	repeat,

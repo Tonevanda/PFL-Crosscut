@@ -48,12 +48,17 @@ The perimeter is comprised of the edge and corner squares. The player can tempor
 
 ### Internal Game State Representation
 
-To describe the game state, we created a dynamic predicate `gameState/3` that holds the current **Board** and its **Rows** and **Columns**. This **Board** is a list of lists of variable width and height (from 5x5 to 9x9), initialized at the beggining of the game with just the ` ` (space) character. Because there are 2 players, `Red` and `Blue`, represented as `R` and `B`, and we need to know which type of player both `R` and `B` are (0 for human player, 1 for easy AI and 2 for harder AI), we created another dynamic predicate called %%%%%% that associates each Piece with its type of player, so, for example, if `Red` was a human player and `Blue` was the harder AI we would represent it as:  
-
-- %%%%%%%('R', 0).
-- %%%%%%%%('B', 2). 
+To describe the game state, we created a dynamic predicate `gameState/5` that holds the current **Board**, its **Rows** and **Columns**, **BlueLevel** and **RedLevel**.**BlueLevel** and **RedLevel** represent the level of player of both pieces, 0 for human player, 1 for the easy AI and 2 for the hard AI. The **Board** is a list of lists of variable width and height (from 5x5 to 9x9), initialized at the beggining of the game with just the ` ` (space) character.
 
 %%%%%%%%%%%%%%%%%% DEPOIS TEMOS DE JOGAR E METER EXEMPLOS DE JOGO NO INICIO, MEIO E FIM %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 ### Game State Visualization
 
+For the initial menu, we created the predicate `read_input`%%%%%vamos mudar este nome por favor%%%%%%%% which prompts the user for the number of rows, then the number of columns, followed by the type of player for the `R` piece and the `B` piece. If any of these inputs aren't valid, the predicate repeats until all of them are.%%%%temos que mudar isto%%%%<br>
+With the input validated, we call the `initial_state/4`, which uses the **Rows** and **Columns** inputted by the user to create an empty list of lists, which represents the `Board` at the beggining of the game.<br>
+To display the board, we created the predicate `display_board/0`%%%%podiamos mudar para display_game para nao chatear tanto o stor%%%%. This predicate uses the `Board` information stored in the `gameState` dynamic predicate to display the board in a user-friendly way to the SICStus console.
+
+### Move Validation and Execution
+
+To validate a move, we created the predicate `move/5`%%%vamos mudar a posição dos argumentos, Move devia estar no fim dos argumentos porque é um - e não +%%%.This predicate calls upon `choose_move/4`, which, depending on the type of player, will generate a move differently. For the human player, for example, `choose_move` simply takes the users input for the row and column the user chooses.<br>
+Afterwards, that move will be sent to the predicate `validate_move/4`, which, as the name suggests, validates the move.

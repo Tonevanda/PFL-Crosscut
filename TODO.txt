@@ -16,9 +16,8 @@ Por último, fazer a regra dos cuts, em que nem todos os flanks resultam em flip
 -------AI----------
 
 Agora para os AIs, o AI burro é só importar a library random, e podemos fazer 2 maneiras:
- -Percorremos a board e guardamos numa lista todas as valid moves, e ele picka uma random
- -Geramos o RowIndex e ColumnIndex random, se a move for valid ele joga, senão dá repeat até ser.
+ -Percorremos a board e guardamos numa lista todas as valid moves, e ele picka uma random DONE FALTA TESTAR
 
 Para o AI inteligente, uma ideia de critério é keeping track dos 2 maiores segmentos de cada player.
 A melhor jogada do AI seria uma jogada que aumentaria o seu maior segmento como também tenta diminuir o maior segmento
-do seu adversário.
+do seu adversário. DONE FALTA TESTAR

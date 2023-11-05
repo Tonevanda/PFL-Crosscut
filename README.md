@@ -54,11 +54,88 @@ To describe the game state, we created a dynamic predicate `gameState/5` that ho
 
 ### Game State Visualization
 
-For the initial menu, we created the predicate `read_input`%%%%%vamos mudar este nome por favor%%%%%%%% which prompts the user for the number of rows, then the number of columns, followed by the type of player for the `R` piece and the `B` piece. If any of these inputs aren't valid, the predicate repeats until all of them are.%%%%temos que mudar isto%%%%<br>
+For the initial menu, we created the predicate `read_initial_input` which prompts the user for the number of rows, then the number of columns, followed by the type of player for the `R` piece and the `B` piece. If any of these inputs aren't valid, the predicate repeats until all of them are.%%%%temos que mudar isto%%%%<br>
 With the input validated, we call the `initial_state/4`, which uses the **Rows** and **Columns** inputted by the user to create an empty list of lists, which represents the `Board` at the beggining of the game.<br>
 To display the board, we created the predicate `display_board/0`%%%%podiamos mudar para display_game para nao chatear tanto o stor%%%%. This predicate uses the `Board` information stored in the `gameState` dynamic predicate to display the board in a user-friendly way to the SICStus console.
 
 ### Move Validation and Execution
 
 To validate a move, we created the predicate `move/5`%%%vamos mudar a posição dos argumentos, Move devia estar no fim dos argumentos porque é um - e não +%%%.This predicate calls upon `choose_move/4`, which, depending on the type of player, will generate a move differently. For the human player, for example, `choose_move` simply takes the users input for the row and column the user chooses.<br>
-Afterwards, that move will be sent to the predicate `validate_move/4`, which, as the name suggests, validates the move.
+Afterwards, that move will be sent to the predicate `validate_move/4`, which, as the name suggests, validates the move.<br>
+To do this, we check **three** different conditions in which a move is valid:
+- The move is an **edge** move, but results in disc flipping, therefore it is valid
+- The move is **not** an **edge** move, yet it still results in disc flipping
+- The move is **not** an **edge** move
+
+To verify the first **two** conditions, we needed to implement the `flip/4` predicate.<br>
+This predicate, everytime a piece is placed on the `Board`, checks **all four** directions around the piece placed. If there is an enemy segment adjacent to said piece and, at the end of that segment, there is an **Ally** piece (a piece of the same color of the piece just placed), then that segment will be flipped.<br>
+However, this does not always happen. If there is an **Enemy** segment ***perpendicular*** to the segment to be flipped, there will be no flipping if the ***perpendicular*** segment is the same size or larger than the size of the segment to be flipped, **if** it were flipped.
+So, to do this, we needed to implement a variety of different predicates:
+- `flip_check_up/5`
+- `flip_check_down/5`
+- `flip_check_left/5`
+- `flip_check_right/5`
+
+These 4 predicates do essentially the same thing but for different directions:
+For every **Enemy** piece on the segment **to be** flipped, it checks if that piece is already on a ***perpendicular*** segment larger than or the same size as the segment to be flipped.<br>
+Because we have to check different directions depending on whether the segment **to be** flipped is horizontal or vertical, we implemented the predicates `flip_check_horizontal/6` and `flip_check_vertical/6`. So, for example, if we're checking to the left of the piece just placed, then, inside the `flip_left` predicate, we would call  `flip_check_vertical`, which, in turn, calls both the `flip_check_up` and the `flip_check_down` predicates. If the sum of the `Accumulator` of these 2 predicates is larger or equal to the segment **to be** flipped + 2 (the 2 **Ally** pieces that ***flanked*** the **Enemy** segment), then that segment will not be flipped. And the same goes for the `flip_check_horizontal`, and `flip_check_left` and `flip_check_right/5` predicates.
+
+### List of Valid Moves
+
+To obtain a list of possible moves, we created the `valid_moves/4` predicate.<br>
+There are 2 different implementations of this predicate, one for each level of AI.<br>
+For the easy AI, `valid_moves` creates a list of valid moves called `ListOfMoves` by using a findall:
+
+```prolog
+findall(I-J, (between(1, Rows1, I), between(1, Columns1, J), validate_move(Board, I-J, Piece, _)), ListOfMoves).
+```
+
+This creates every I-J pair that satisfies the `validate_move` predicate, that was alreay previously explained.
+
+For the hard AI, %%%%%%%%%%%%%%%%%%%%%%%
+
+### End of Game
+
+To verify the end of the game, we implemented the `game_over/3` predicate.<br>
+For `game_over` to be true, either one of two conditions must be met:
+- There is a contiguous horizontal segment of the same piece from one side of the board to the other, except for the edge spaces
+- There is a contiguous vertical segment of the same piece from the top to the bottom of the board, except for the edge spaces
+For this, we made 2 different implementations of the `game_over` predicate.<br>
+The first one calls the `check_horizontal/5` predicate, that uses the `forall/3` predicate, defined in the `utils.pl` file, to iterate through the row of the recently placed piece to see if it resulted in a win.<br>
+If that one fails, then the other implementation of the `game_over` predicate is called.<br>
+This one calls the `check_vertical/5` predicate, which checks if the column in which the most recent piece has been placed contains a vertical segment that would result in a win.<br>
+After every move, in the `game_loop/0` predicate, we check whether or not the move made resulted in a win. If not then `\+game_over` is true, and the game loop continues.<br>
+If the last move did result in a win, then `\+game_over` is false, and, because of the ***cut*** placed above `game_over`, `game_loop` does not backtrack and the game ends.
+
+### Game State Evaluation
+
+To evaluate the state of the game, we created the `value/3` predicate.<br>
+We represent the value of the current state of the game as the difference between the longest **Ally** segment and the needed size to win.<br>
+To do that, we calculate the longest horizontal **Ally** segment and the longest vertical **Ally** segment, and we calculate the difference between the longest horizontal **Ally** segment and the number of columns - 2 (because the edges don't count) and the difference between the longest vertical **Ally** segment and the number of rows - 2.<br>
+The value of the current state of the game is the minimum value of those differentials.<br
+
+### Computer Plays
+
+To generate a move, we created the `choose_move/4` predicate, which has 3 different implementations, one for each type of player.<br>
+The implementation of the human player version was already talked about previously in the [Move Validation and Execution](#move-validation-and-execution) part of this report.
+For the easy AI, we simply called the `valid_moves` predicate with Level as 1 to get a list of all valid moves. Then, we simply choose a random move with:
+
+```prolog
+random_member(Move, ListOfMoves).
+```
+
+Finally, for the hard AI, we generate a list of valid moves that decrease the **current value** of the game, for the AI's piece.<br>. 
+Because the hard AI always tries to make a move that decreases the value of the state of the game, he is actively trying to elongate its longest segment, and, therefore, actively trying to win.
+
+## Conclusions
+
+This project was very interesting to develop, although hard, because Prolog is a very unusual language, at least compared to what we are used to. Even though it was hard, when everything works, it all makes perfect sense and looks great. The beggining was hard because we had to re-wire our brain into forgetting object-oriented and imperative programming and understanding logical programming.<br>
+It's a shame we had a little less than a week to develop this because of other projects. With more time, we could try upgrading the smart AI to become even smarter, possibly through the Minimax algorithm.<br>
+Another limitation we had was the Prolog version used during development. Many predicates documented in the SWI Prolog website do not exist in the Prolog version used to develop this project, such as the `forall/2` predicate. Therefore, we had to create our own, which was a little annoying. I am of the belief that, if we are learning a language and we have to develop a project in that language, we should be able to have access to every resource that language provides.
+
+## Bibliography
+
+To develop this project, we used the following resources:
+
+- https://www.swi-prolog.org/
+- https://marksteeregames.com/Crosscut_rules.pdf

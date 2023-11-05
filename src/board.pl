@@ -5,10 +5,10 @@
 :- consult('utils.pl').
 :- consult('flip.pl').
 :- consult('computer.pl').
-:- dynamic gameState/3.
+:- dynamic gameState/5.
 
-get_game_state(Board, Rows, Columns) :-
-    gameState(Board, Rows, Columns).
+get_game_state(Board, Rows, Columns, BlueLevel, RedLevel) :-
+    gameState(Board, Rows, Columns, BlueLevel, RedLevel).
 % draw_horizontal_line(+N)
 % Draws a horizontal line of size N with the character '-'
 draw_horizontal_line(N) :-
@@ -29,7 +29,7 @@ draw_top_half(N) :-
 draw_top_half(0).
 
 draw_middle_half(Row, ColumnIndex) :-
-    get_game_state(Board,_,Columns),
+    get_game_state(Board,_,Columns,_,_),
     ColumnIndex < Columns,
     write(' '),
     get_piece(Board, Row, ColumnIndex, Piece),
@@ -51,7 +51,7 @@ draw_bottom_half(N) :-
 draw_bottom_half(0).
 
 display_board :-
-    get_game_state(Board, Rows, Columns),
+    get_game_state(Board, Rows, Columns,_,_),
     write(' '),
     Columns1 is Columns * 3 + Columns-1,
     draw_horizontal_line(Columns1),
@@ -91,7 +91,7 @@ get_piece(Board, I, _, Element, Current) :-
 
 % place_piece(+Board, +I, +J, +NewPiece, -NewBoard)
 % Places the piece at row I and column J of the board
-place_piece(Board,I, J, NewPiece,NewBoard) :-
+place_piece(Board,I-J, NewPiece,NewBoard) :-
     nth0(I, Board, Row), % get the row at index I
     replace(Row, J, NewPiece, NewRow),
     replace(Board, I, NewRow, NewBoard).
@@ -100,7 +100,6 @@ place_piece(Board,I, J, NewPiece,NewBoard) :-
 % Checks if the position at row I and column J of the board is empty
 is_empty(Board, I, J) :-
     get_piece(Board, I, J, ' '), !.
-is_empty(_, _, _):- !, fail.
 
 % not_edge(+Board, +I, +J)
 % Checks if the position at row I and column J of the board is not at the edge
@@ -114,25 +113,28 @@ not_edge(Board, I, J) :-
 
 % validate_move(+Board,+I, +J, +State)
 % Checks if it is an edge move results in disc flipping
-validate_move(Board, I, J,State, NewBoard) :-
+validate_move(Board, I-J, State, NewBoard) :-
+    write('Getting piece'),nl,
+    write('I-J: '), write(I-J),nl,
     is_empty(Board, I, J),
+    write('Validating move1'),nl,
     \+not_edge(Board, I, J),!, % check if the position is at the edge
-    flip(Board, State, I, J, NewBoard),nl,
+    flip(Board, State, I-J, NewBoard),nl,
     write('Piece was attempted to be placed on edge'),nl.
 
 % validate_move(+Board,+I, +J, +State)
 % Checks if it is not an edge move and results in flipping 
-validate_move(Board, I, J,State, NewestBoard) :-
+validate_move(Board, I-J,State, NewestBoard) :-
     is_empty(Board, I, J),
     not_edge(Board, I, J),
-    place_piece(Board, I, J, State, NewBoard),nl,
+    place_piece(Board, I-J, State, NewBoard),nl,
     write('Not on an edge'),nl,
-    flip(NewBoard, State, I, J, NewestBoard),!.
+    flip(NewBoard, State, I-J, NewestBoard),!.
 
 % validate_move(+Board,+I, +J, +State)
 % Checks if it is not an edge move
-validate_move(Board, I, J,State, NewBoard) :-
+validate_move(Board, I-J,State, NewBoard) :-
     is_empty(Board, I, J),
     not_edge(Board, I, J),
-    place_piece(Board, I, J, State, NewBoard),nl,
+    place_piece(Board, I-J, State, NewBoard),nl,
     write('Not on an edge'),nl.

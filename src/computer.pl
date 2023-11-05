@@ -47,7 +47,7 @@ valid_moves(Board, '2', Piece, ListOfMoves):- %dependo do flow do codigo talvez 
     get_state(Piece, Enemy),
     findall(I-J, (
         validate_move(Board, I, J, NewBoard),
-        \+ results_in_win(Board,I,J,Enemy),
+        \+results_in_win(Board,I,J,Enemy),
         value(NewBoard, Piece, NewValue), 
         NewValue < InitialValue
         ), ListOfMoves). % Se NewValue < InitialValue, então quer dizer que a diferença entre o maior segmento e o tamanho necessário para ganhar diminuiu, então o movimento é bom
@@ -63,4 +63,8 @@ results_in_win(Board, I, J, Piece) :-
 % Chooses a move for the AI
 choose_move(Piece, Level, Move):-
     valid_moves(Piece, Level, ListOfMoves),
+    random_member(Move, ListOfMoves).
+choose_move(Piece, '2', []):-
+    get_state(Piece, Enemy),
+    findall(I-J, (validate_move(Board, I, J, _NewBoard), \+results_in_win(Board,I,J,Enemy)), ListOfMoves),
     random_member(Move, ListOfMoves).

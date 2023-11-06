@@ -49,14 +49,11 @@ flip_check_horizontal(_,_,_,_,Longestinput,Longestinput).
 
 
 flip_left(Ally, LineIndex, ColumnIndex, Board, Board, Longest, Accumulator) :-
-    get_piece(Board, LineIndex, ColumnIndex, Ally),
-    write(' basecase '),
-    write('longest: '),write(Longest),nl,
-    write('Accumulator: '),write(Accumulator),nl,!,
+    get_piece(Board, LineIndex, ColumnIndex, Ally),!,
     Accumulator > Longest.
 flip_left(Ally, LineIndex, ColumnIndex, Board, NewestBoard, Longest, Accumulator) :-
     ColumnIndex>0,
-    get_state(Ally, Enemy, _),
+    get_next_state(Ally, Enemy, _),
     get_piece(Board, LineIndex, ColumnIndex, Enemy),
 
     flip_check_vertical(Board, Enemy, LineIndex, ColumnIndex, Longest, Longestoutput),
@@ -73,7 +70,7 @@ flip_right(Ally, LineIndex, ColumnIndex, Board, _, Board, Longest, Accumulator) 
     Accumulator > Longest.
 flip_right(Ally, LineIndex, ColumnIndex, Board, Columns, NewestBoard, Longest, Accumulator) :-
     ColumnIndex<Columns,
-    get_state(Ally, Enemy, _),
+    get_next_state(Ally, Enemy, _),
     get_piece(Board, LineIndex, ColumnIndex, Enemy),
 
     flip_check_vertical(Board, Enemy, LineIndex, ColumnIndex, Longest, Longestoutput),
@@ -90,7 +87,7 @@ flip_up(Ally, LineIndex, ColumnIndex, Board, Board, Longest, Accumulator) :-
     Accumulator > Longest.
 flip_up(Ally, LineIndex, ColumnIndex, Board, NewestBoard, Longest, Accumulator) :-
     LineIndex>0,
-    get_state(Ally, Enemy, _),
+    get_next_state(Ally, Enemy, _),
     get_piece(Board, LineIndex, ColumnIndex, Enemy),
     flip_check_horizontal(Board, Enemy, LineIndex, ColumnIndex, Longest, Longestoutput),
     nth0(LineIndex, Board, Row), % get the row at index I
@@ -106,7 +103,7 @@ flip_down(Ally, LineIndex, ColumnIndex, Board, _, Board, Longest, Accumulator) :
     Accumulator > Longest.
 flip_down(Ally, LineIndex, ColumnIndex, Board, Rows, NewestBoard, Longest, Accumulator) :-
     LineIndex<Rows,
-    get_state(Ally, Enemy, _),
+    get_next_state(Ally, Enemy, _),
     get_piece(Board, LineIndex, ColumnIndex, Enemy),
     flip_check_horizontal(Board, Enemy, LineIndex, ColumnIndex, Longest, Longestoutput),
     nth0(LineIndex, Board, Row), % get the row at index I
@@ -118,24 +115,24 @@ flip_down(Ally, LineIndex, ColumnIndex, Board, Rows, NewestBoard, Longest, Accum
 
 flip(Board, State, LineIndex-ColumnIndex, NewBoard) :-
     ColumnIndex1 is ColumnIndex - 1,
-    get_state(State, Enemy, _),
+    get_next_state(State, Enemy, _),
     get_piece(Board, LineIndex, ColumnIndex1, Enemy),
     flip_left(State, LineIndex, ColumnIndex1, Board, NewBoard, 0, 2).
 flip(Board, State, LineIndex-ColumnIndex, NewBoard) :-
     get_game_state(_, _, Columns, _, _),
     ColumnIndex1 is ColumnIndex + 1,
-    get_state(State, Enemy, _),
+    get_next_state(State, Enemy, _),
     get_piece(Board, LineIndex, ColumnIndex1, Enemy),
     flip_right(State, LineIndex, ColumnIndex1, Board, Columns, NewBoard, 0, 2).
 flip(Board, State, LineIndex-ColumnIndex, NewBoard) :-
     LineIndex1 is LineIndex - 1,
-    get_state(State, Enemy, _),
+    get_next_state(State, Enemy, _),
     get_piece(Board, LineIndex1, ColumnIndex, Enemy),
     flip_up(State, LineIndex1, ColumnIndex, Board, NewBoard,0,2).
 flip(Board, State, LineIndex-ColumnIndex, NewBoard) :-
     get_game_state(_, Rows, _, _, _),
     LineIndex1 is LineIndex + 1,
-    get_state(State, Enemy, _),
+    get_next_state(State, Enemy, _),
     get_piece(Board, LineIndex1, ColumnIndex, Enemy),
     flip_down(State, LineIndex1, ColumnIndex, Board , Rows, NewBoard, 0, 2).
-flip(Board,_,_,Board):-write('nuhuh'),fail.
+flip(Board,_,_,Board):-fail.

@@ -18,12 +18,12 @@ find_longest_segment_in_list([Piece|Rest], _, MaxLength, _CurrentPiece, LongestS
     find_longest_segment_in_list(Rest, 1, MaxLength, Piece, LongestSegment).
 
 find_longest_horizontal(Board, Piece, LongestHorizontal) :-
-    maplist(find_longest_segment_in_row(_Row, Piece, _LongestSegment), Board, Segments),
+    maplist(find_longest_segment_in_row, Board, Piece, Segments),
     max_list(Segments, LongestHorizontal).
 
 find_longest_vertical(Board, Piece, LongestVertical) :-
     transpose(Board, TransposedBoard), % Swap rows and columns
-    maplist(find_longest_segment_in_row(_Row, Piece, _LongestSegment), TransposedBoard, Segments),
+    maplist(find_longest_segment_in_row, TransposedBoard, Piece, Segments),
     max_list(Segments, LongestVertical).
 
 value(Board, Piece, Value) :-
@@ -38,38 +38,42 @@ value(Board, Piece, Value) :-
 % valid_moves(+Piece, +AILevel, -ListOfMoves)
 % Finds all valid moves for the AI
 valid_moves(Board, Piece, 1, ListOfMoves) :-
-    get_game_state(Board, Rows, Columns,_,_),
+    get_game_state(_, Rows, Columns,_,_),
     Rows1 is Rows-1,
     Columns1 is Columns-1,
     findall(I-J, (between(1, Rows1, I), between(1, Columns1, J), validate_move(Board, I-J, Piece, _)), ListOfMoves).
-/*
-% valid_move(+Board, +AILevel, +Piece, -ListOfMoves)
-% Generates a list of all valid moves for the easy AI
-valid_moves(Board, Piece, 1, ListOfMoves):-
-    validate_move(Board, I-J, Piece, _),
-    append(ListOfMoves, [I-J], ListOfMoves),
-    %findall(I-J, validate_move(Board, I-J, Piece, _), ListOfMoves),
-    write(ListOfMoves), nl.
-*/
+
 % valid_move(+Board, +AILevel, +Piece, -ListOfMoves)
 % Generates a list of all valid moves for the hard AI
 valid_moves(Board, Piece, 2, ListOfMoves):- %dependo do flow do codigo talvez nao seja preciso passar piece e é so preciso chamar get_state
     value(Board, Piece, InitialValue),
-    get_state(Piece, Enemy,_),
+    get_game_state(Board, Rows, Columns,_,_),
+    Rows1 is Rows-1,
+    Columns1 is Columns-1,
     findall(I-J, (
+        between(1, Rows1, I), between(1, Columns1, J),
         validate_move(Board, I-J, Piece, NewBoard),
-        \+results_in_win(Board,I,J,Enemy),
         value(NewBoard, Piece, NewValue), 
         NewValue < InitialValue
-        ), ListOfMoves). % Se NewValue < InitialValue, então quer dizer que a diferença entre o maior segmento e o tamanho necessário para ganhar diminuiu, então o movimento é bom
+        ), ListOfMoves).% Se NewValue < InitialValue, então quer dizer que a diferença entre o maior segmento e o tamanho necessário para ganhar diminuiu, então o movimento é bom
 
-better_valid_moves(Board, Piece, ListOfMoves):-
-    get_state(Piece, Enemy,_),
-    findall(I-J, (validate_move(Board, I-J, Piece, _), \+results_in_win(Board, I, J, Enemy)), ListOfMoves).
+% get_enemy_winning_moves(+Board, +Piece, -ListOfMoves)
+% Generates a list of moves that the enemy can play next turn to win
+get_enemy_winning_moves(Board, Piece, ListOfMoves):-
+    get_game_state(Board, Rows, Columns,_,_),
+    get_next_state(Piece, EnemyPiece,_),
+    Rows1 is Rows-1,
+    Columns1 is Columns-1,
+    findall(I-J, (between(1, Rows1, I), between(1, Columns1, J), validate_move(Board, I-J, EnemyPiece, _), validate_move(Board, I-J, Piece, _), results_in_win(Board, I, J, EnemyPiece)), ListOfMoves).
+
+get_winning_moves(Board, Piece, ListOfMoves):-
+    get_game_state(_, Rows, Columns,_,_),
+    Rows1 is Rows-1,
+    Columns1 is Columns-1,
+    findall(I-J, (between(1, Rows1, I), between(1, Columns1, J), validate_move(Board, I-J, Piece, _), check_win(Board, Piece, I-J)), ListOfMoves).
 
 % results_in_win(+Board, +I, +J, +Piece)
 % Checks if the move to the position at row I and column J of the board results in a win condition for the given piece
 results_in_win(Board, I, J, Piece) :-
-    copy_term(Board, TempBoard),
-    place_piece(TempBoard, I, J, Piece),
-    check_win(TempBoard, I, J, Piece).
+    place_piece(Board, I-J, Piece, NewBoard),
+    check_win(NewBoard, Piece, I-J).

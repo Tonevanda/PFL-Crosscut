@@ -18,6 +18,20 @@ draw_horizontal_line(N) :-
     draw_horizontal_line(N1).
 draw_horizontal_line(0).
 
+draw_index(Columns):-
+    write(' '),
+    write(' '),
+    draw_index_aux(0, Columns).
+draw_index_aux(Index, Columns) :-
+    Index < Columns,
+    write(' '),
+    write(' '),
+    write(Index),
+    write(' '),
+    Index1 is Index + 1,
+    draw_index_aux(Index1, Columns).
+draw_index_aux(_, _):-nl.
+
 draw_top_half(N) :-
     N > 0,
     write(' '),
@@ -28,8 +42,7 @@ draw_top_half(N) :-
     draw_top_half(N1).
 draw_top_half(0).
 
-draw_middle_half(Row, ColumnIndex) :-
-    get_game_state(Board,_,Columns,_,_),
+draw_middle_half(Row, ColumnIndex, Columns, Board) :-
     ColumnIndex < Columns,
     write(' '),
     get_piece(Board, Row, ColumnIndex, Piece),
@@ -37,8 +50,8 @@ draw_middle_half(Row, ColumnIndex) :-
     write(' '),
     write('|'),
     ColumnIndex1 is ColumnIndex + 1,
-    draw_middle_half(Row, ColumnIndex1).
-draw_middle_half(_, _).
+    draw_middle_half(Row, ColumnIndex1, Columns, Board).
+draw_middle_half(_, _, _, _).
 
 draw_bottom_half(N) :-
     N > 0,
@@ -50,27 +63,37 @@ draw_bottom_half(N) :-
     draw_bottom_half(N1).
 draw_bottom_half(0).
 
-display_board :-
-    get_game_state(Board, Rows, Columns,_,_),
-    write(' '),
+display_game(gameState(Board, Rows, Columns,_,_)) :-  
     Columns1 is Columns * 3 + Columns-1,
+    draw_index(Columns),
+    write(' '),
+    write(' '),
+    write(' '),
     draw_horizontal_line(Columns1),
-    display_board_aux(0, Rows, Columns, Board).
+    display_game_aux(0, Rows, Columns, Board).
     
-display_board_aux(RowIndex, Rows, Columns, Board) :-
+display_game_aux(RowIndex, Rows, Columns, Board) :-
     RowIndex < Rows,  
     nl,
+    write(' '),
+    write(' '),
     write('|'),
     draw_top_half(Columns),
     nl,
+    RowIndextmp is RowIndex + 65,
+    char_code(Char, RowIndextmp),
+    write(Char),   
+    write(' '),
     write('|'),
-    draw_middle_half(RowIndex, 0),
+    draw_middle_half(RowIndex, 0, Columns, Board),
     nl,
+    write(' '),
+    write(' '),
     write('|'),
     draw_bottom_half(Columns),
     RowIndex1 is RowIndex + 1,
-    display_board_aux(RowIndex1, Rows, Columns, Board).
-display_board_aux(Rows, Rows, _, _).
+    display_game_aux(RowIndex1, Rows, Columns, Board).
+display_game_aux(Rows, Rows, _, _).
 
 % get_element(+Board, +I, +J, ?Element)
 % Gets the piece at row I and column J of the board
@@ -114,21 +137,16 @@ not_edge(Board, I, J) :-
 % validate_move(+Board,+I, +J, +State)
 % Checks if it is an edge move results in disc flipping
 validate_move(Board, I-J, State, NewBoard) :-
-    write('Getting piece'),nl,
-    write('I-J: '), write(I-J),nl,
     is_empty(Board, I, J),
-    write('Validating move1'),nl,
     \+not_edge(Board, I, J),!, % check if the position is at the edge
-    flip(Board, State, I-J, NewBoard),nl,
-    write('Piece was attempted to be placed on edge'),nl.
+    flip(Board, State, I-J, NewBoard),nl.
 
 % validate_move(+Board,+I, +J, +State)
 % Checks if it is not an edge move and results in flipping 
 validate_move(Board, I-J,State, NewestBoard) :-
     is_empty(Board, I, J),
     not_edge(Board, I, J),
-    place_piece(Board, I-J, State, NewBoard),nl,
-    write('Not on an edge'),nl,
+    place_piece(Board, I-J, State, NewBoard),
     flip(NewBoard, State, I-J, NewestBoard),!.
 
 % validate_move(+Board,+I, +J, +State)
@@ -136,5 +154,4 @@ validate_move(Board, I-J,State, NewestBoard) :-
 validate_move(Board, I-J,State, NewBoard) :-
     is_empty(Board, I, J),
     not_edge(Board, I, J),
-    place_piece(Board, I-J, State, NewBoard),nl,
-    write('Not on an edge'),nl.
+    place_piece(Board, I-J, State, NewBoard).

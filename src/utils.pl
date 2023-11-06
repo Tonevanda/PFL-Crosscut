@@ -1,6 +1,6 @@
-% my_forall(+Start, +End, +Goal)
+% forall(+Start, +End, +Goal)
 % Succeeds if Goal holds for all integers between Start and End (inclusive)
-my_forall(Start, End, Goal) :-
+forall(Start, End, Goal) :-
     Start =< End,
     copy_term(Goal, GoalCopy),
     GoalCopy =.. [Pred|Args],
@@ -8,8 +8,8 @@ my_forall(Start, End, Goal) :-
     NewGoal =.. [Pred|NewArgs],
     call(NewGoal),
     Next is Start + 1,
-    my_forall(Next, End, Goal).
-my_forall(Start, End, _) :-
+    forall(Next, End, Goal).
+forall(Start, End, _) :-
     Start > End.
 
 % replace(+List, +Index, +NewElement, -NewList)

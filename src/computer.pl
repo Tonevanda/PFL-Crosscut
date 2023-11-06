@@ -1,38 +1,41 @@
-longest_segment(Board, Piece, LongestHorizontal) :-
-    find_longest_horizontal(Board, Piece, LongestHorizontal).
+% find_longest_horizontal(+Board, +Piece, -LongestHorizontal)
+% Finds the longest horizontal segment of Piece on Board
+find_longest_horizontal([Row|Rows], Piece, LongestHorizontal) :-
+    find_longest_segment_in_row(Piece, Row, LongestInRow),
+    find_longest_horizontal(Rows, Piece, LongestInRest),
+    LongestHorizontal is max(LongestInRow, LongestInRest).
+find_longest_horizontal([], _, 0).
 
-longest_segment(Board, Piece, LongestVertical) :-
-    find_longest_vertical(Board, Piece, LongestVertical).
-
-
-find_longest_segment_in_row(Row, Piece, LongestSegment) :-
-    find_longest_segment_in_list(Row, 0, 0, Piece, LongestSegment).
-
-
-find_longest_segment_in_list([], _, MaxLength, _, MaxLength).
-find_longest_segment_in_list([CurrentPiece|Rest], CurrentLength, MaxLength, CurrentPiece, LongestSegment) :-
-    NewLength is CurrentLength + 1,
-    NewMaxLength is max(NewLength, MaxLength),
-    find_longest_segment_in_list(Rest, NewLength, NewMaxLength, CurrentPiece, LongestSegment).
-find_longest_segment_in_list([Piece|Rest], _, MaxLength, _CurrentPiece, LongestSegment) :-
-    find_longest_segment_in_list(Rest, 1, MaxLength, Piece, LongestSegment).
-
-find_longest_horizontal(Board, Piece, LongestHorizontal) :-
-    maplist(find_longest_segment_in_row, Board, Piece, Segments),
-    max_list(Segments, LongestHorizontal).
-
+% find_longest_vertical(+Board, +Piece, -LongestVertical)
+% Finds the longest vertical segment of Piece on Board
 find_longest_vertical(Board, Piece, LongestVertical) :-
-    transpose(Board, TransposedBoard), % Swap rows and columns
-    maplist(find_longest_segment_in_row, TransposedBoard, Piece, Segments),
-    max_list(Segments, LongestVertical).
+    transpose(Board, TransposedBoard),
+    find_longest_horizontal(TransposedBoard, Piece, LongestVertical).
+
+% find_longest_segment_in_row(+Piece, +Row, -LongestSegment)
+% Finds the longest segment of Piece in Row
+find_longest_segment_in_row(Piece, [Piece|T], LongestSegment) :-
+    find_longest_segment_in_row(Piece, T, LongestInRest),
+    LongestSegment is 1 + LongestInRest.
+find_longest_segment_in_row(Piece, [_|T], LongestSegment) :-
+    find_longest_segment_in_row(Piece, T, LongestSegment).
+find_longest_segment_in_row(_, [], 0).
 
 value(Board, Piece, Value) :-
     get_game_state(_, Rows, Columns, _, _),
+    %write('test'), nl,
     find_longest_horizontal(Board, Piece, LongestHorizontal),
+    %write('test1'), nl,
     find_longest_vertical(Board, Piece, LongestVertical),
-    HorizontalValue is min(LongestHorizontal, Columns - 2,HorizontalValue),
-    VerticalValue is min(LongestVertical, Rows - 2, VerticalValue),
-    Value is min(HorizontalValue, VerticalValue).
+    %write('LongestHorizontal: '), write(LongestHorizontal), nl,
+    %write('LongestVertical: '), write(LongestVertical), nl,
+    Columns1 is Columns-2,
+    Rows1 is Rows-2,
+    min(LongestHorizontal, Columns1,HorizontalValue),
+    min(LongestVertical, Rows1, VerticalValue),
+    %write('HorizontalValue: '), write(HorizontalValue), nl,
+    %write('VerticalValue: '), write(VerticalValue), nl,
+    min(HorizontalValue, VerticalValue, Value).
 
 
 % valid_moves(+Piece, +AILevel, -ListOfMoves)
@@ -50,6 +53,7 @@ valid_moves(Board, Piece, 2, ListOfMoves):- %dependo do flow do codigo talvez na
     get_game_state(Board, Rows, Columns,_,_),
     Rows1 is Rows-1,
     Columns1 is Columns-1,
+    
     findall(I-J, (
         between(1, Rows1, I), between(1, Columns1, J),
         validate_move(Board, I-J, Piece, NewBoard),
@@ -64,7 +68,8 @@ get_enemy_winning_moves(Board, Piece, ListOfMoves):-
     get_next_state(Piece, EnemyPiece,_),
     Rows1 is Rows-1,
     Columns1 is Columns-1,
-    findall(I-J, (between(1, Rows1, I), between(1, Columns1, J), validate_move(Board, I-J, EnemyPiece, _), validate_move(Board, I-J, Piece, _), results_in_win(Board, I, J, EnemyPiece)), ListOfMoves).
+    findall(I-J, (between(1, Rows1, I), between(1, Columns1, J), validate_move(Board, I-J, EnemyPiece, _), validate_move(Board, I-J, Piece, _), results_in_win(Board, I, J, EnemyPiece)), ListOfMoves)
+    .
 
 get_winning_moves(Board, Piece, ListOfMoves):-
     get_game_state(_, Rows, Columns,_,_),

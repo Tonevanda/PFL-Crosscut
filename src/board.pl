@@ -1,4 +1,4 @@
-% FILEPATH: /Users/tonevanda/Documents/GitHub/PFL-Crosscut/src/board.pl
+
 
 :- use_module(library(random)).
 :- use_module(library(lists)).

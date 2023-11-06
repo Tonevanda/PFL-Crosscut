@@ -62,6 +62,44 @@ between(Low, High, Value) :-
     NewLow is Low + 1, 
     between(NewLow, High, Value).
 
+
+
+% max_in_list(+List, -Max)
+% Finds the maximum element in List
+max_list([X], X).
+max_list([X|Xs], Max) :-
+    max_list(Xs, MaxRest),
+    Max is max(X, MaxRest).
+
+% min(+Num1, +Num2, -Min)
+% Finds the minimum between Num1 and Num2
+min(Num1, Num2, Min) :-
+    Num1 =< Num2,
+    Min = Num1.
+min(Num1, Num2, Min) :-
+    Num2 < Num1,
+    Min = Num2.
+
+
+    % predsort(+Pred, +List, -Sorted)
+% Sorts List into Sorted using Pred as the comparison predicate
+predsort(_, [], []).
+predsort(Pred, [X|Xs], Sorted) :-
+    predsort(Pred, Xs, SortedXs),
+    insert(Pred, X, SortedXs, Sorted).
+
+% insert(+Pred, +X, +List, -Result)
+% Inserts X into List (which is assumed to be sorted according to Pred)
+% such that the resulting list Result is also sorted according to Pred
+insert(Pred, X, [Y|Ys], [Y|Zs]) :-
+    call(Pred, Order, X, Y),
+    Order = '>',
+    insert(Pred, X, Ys, Zs).
+insert(Pred, X, [Y|Ys], [X,Y|Ys]) :-
+    call(Pred, Order, X, Y),
+    Order \= '>'.
+insert(_, X, [], [X]).
+
 clear_buffer:-
 	repeat,
 	get_char(C),

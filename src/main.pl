@@ -98,11 +98,11 @@ check_vertical(_, Rows, _, _, Rows).
 
 
 compare_moves(Order, I1-J1, I2-J2) :-
-    get_game_state(Board, Rows, Columns),
-    place_piece(Board, I1, J1, Piece, NewBoard1),
-    value(NewBoard1, Piece, Rows, Columns, Value1),
-    place_piece(Board, I2, J2, Piece, NewBoard2),
-    value(NewBoard2, Piece, Rows, Columns, Value2),
+    get_game_state(Board, _,_, _, _),
+    place_piece(Board, I1-J1, Piece, NewBoard1),
+    value(NewBoard1, Piece, Value1),
+    place_piece(Board, I2-J2, Piece, NewBoard2),
+    value(NewBoard2, Piece, Value2),
     compare(Order, Value1, Value2).
 
 choose_move(_, Piece, 0, LineIndex-ColumnIndex):-
@@ -115,13 +115,9 @@ choose_move(_, Piece, 0, LineIndex-ColumnIndex):-
     read_number(ColumnIndex).
 % choose_move(+Board, +Piece, +AILevel, -Move)
 % Chooses a move for the AI
-choose_move(Board, Piece, 1, Move):- %Se falhar quer dizer que ListOfMoves é vazia, pode ser necessário fazer uma cena que acabe o jogo se nao der para fazer mais movimentos, mas nao sei se é possivel neste jogo acabar em draw
+choose_move(Board, Piece, 1, Move):- 
     valid_moves(Board, Piece, 1, ListOfMoves),
     random_member(Move, ListOfMoves).
-% Apercebi-me agora que esta forma é meia à bruta, porque se não encontrar um movimento que aumente o maior segmento, vai escolher um movimento aleatório, 
-% mas tecnicamente a melhor jogada possível seria tentar aumentar o segundo maior segmento, seria muito mais dificil fazer isso tho acho
-% Para fazermos essa de depois meter no segundo melhor ig que teriamos que mudar o find_longest_segment todo para ele retornar uma lista sorted por tamanho 
-% de segmento, e depois era so ir buscar o segundo elemento da lista e por ai fora até funcionar, se nunca conseguir então acaba por escolher um movimento aleatório
 
 choose_move(Board, Piece, 2, Move):-
     get_winning_moves(Board, Piece, ListOfMoves),
@@ -129,13 +125,12 @@ choose_move(Board, Piece, 2, Move):-
 
 choose_move(Board, Piece, 2, Move):- 
     get_enemy_winning_moves(Board, Piece, ListOfMoves), 
-    random_member(Move, ListOfMoves).
-    
-choose_move(Board, Piece, 2, Move):- %Se falhar quer dizer que ListOfMoves é vazia, pode ser necessário fazer uma cena que acabe o jogo se nao der para fazer mais movimentos, mas nao sei se é possivel neste jogo acabar em draw
+    random_member(Move, ListOfMoves). 
+
+choose_move(Board, Piece, 2, Move):- 
     valid_moves(Board, Piece, 2, ListOfMoves),
     %predsort(compare_moves, ListOfMoves, SortedMoves),
-    %nth0(0, SortedMoves, Move). %nth0(0, ListOfMoves, Move) vai buscar o primeiro elemento da lista, que é o que tem o menor
-    write(ListOfMoves),
+    %nth0(0, SortedMoves, Move), %nth0(0, ListOfMoves, Move) vai buscar o primeiro elemento da lista, que é o que tem o menor
     random_member(Move, ListOfMoves).
 
 

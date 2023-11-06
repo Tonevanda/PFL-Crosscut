@@ -64,7 +64,7 @@ draw_bottom_half(N) :-
 draw_bottom_half(0).
 
 display_game(gameState(Board, Rows, Columns,_,_)) :-  
-    Columns1 is Columns * 3 + Columns-1,
+    Columns1 is Columns * 3 + Columns-1,nl,
     draw_index(Columns),
     write(' '),
     write(' '),
@@ -103,15 +103,16 @@ get_piece(Board, I, J, Element) :-
     length(Row, M), % get the number of columns
     I >= 0, I < N, % check if the row index is within bounds
     J >= 0, J < M, % check if the column index is within bounds
-    nth0(J, Row, Element), % get the element at index J in the row
-    !.
-    
+    nth0(J, Row, Element). % get the element at index J in the row
+
+
+    /*
 % get_piece(+Board, +I, +J, +State, +Current)
 % Gets the piece at row I and column J of the board
 get_piece(Board, I, _, Element, Current) :-
     nth0(I, Board, Row), % get the row at index I
     nth0(Current, Row, Element). % get the piece at index Current
-
+*/
 % place_piece(+Board, +I, +J, +NewPiece, -NewBoard)
 % Places the piece at row I and column J of the board
 place_piece(Board,I-J, NewPiece,NewBoard) :-
@@ -122,7 +123,7 @@ place_piece(Board,I-J, NewPiece,NewBoard) :-
 % is_empty(+Board, +I, +J)
 % Checks if the position at row I and column J of the board is empty
 is_empty(Board, I, J) :-
-    get_piece(Board, I, J, ' '), !.
+    get_piece(Board, I, J, ' ').
 
 % not_edge(+Board, +I, +J)
 % Checks if the position at row I and column J of the board is not at the edge
@@ -139,7 +140,7 @@ not_edge(Board, I, J) :-
 validate_move(Board, I-J, State, NewBoard) :-
     is_empty(Board, I, J),
     \+not_edge(Board, I, J),!, % check if the position is at the edge
-    flip(Board, State, I-J, NewBoard),nl.
+    flip(Board, State, I-J, NewBoard).
 
 % validate_move(+Board,+I, +J, +State)
 % Checks if it is not an edge move and results in flipping 
@@ -147,11 +148,22 @@ validate_move(Board, I-J,State, NewestBoard) :-
     is_empty(Board, I, J),
     not_edge(Board, I, J),
     place_piece(Board, I-J, State, NewBoard),
-    flip(NewBoard, State, I-J, NewestBoard),!.
+    validate_move_aux(NewBoard, I-J,State, NewestBoard).
+    
 
-% validate_move(+Board,+I, +J, +State)
-% Checks if it is not an edge move
-validate_move(Board, I-J,State, NewBoard) :-
-    is_empty(Board, I, J),
-    not_edge(Board, I, J),
-    place_piece(Board, I-J, State, NewBoard).
+
+validate_move_aux(Board, I-J,State, NewestBoard) :-
+    flip(Board, State, I-J, NewBoard),
+    flip(NewBoard, State, I-J, NewBoard1),
+    flip(NewBoard1, State, I-J, NewBoard2),
+    flip(NewBoard2, State, I-J, NewestBoard).
+validate_move_aux(Board, I-J,State, NewestBoard) :-
+    flip(Board, State, I-J, NewBoard),
+    flip(NewBoard, State, I-J, NewBoard1),
+    flip(NewBoard1, State, I-J, NewestBoard).
+validate_move_aux(Board, I-J,State, NewestBoard) :-
+    flip(Board, State, I-J, NewBoard),
+    flip(NewBoard, State, I-J, NewestBoard).
+validate_move_aux(Board, I-J,State, NewestBoard) :-
+    flip(Board, State, I-J, NewestBoard).
+validate_move_aux(Board,_,_,Board).

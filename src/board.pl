@@ -7,8 +7,11 @@
 :- consult('computer.pl').
 :- dynamic gameState/5.
 
+% get_game_state(-Board, -Rows, -Columns, -BlueLevel, -RedLevel)
+% Gets the current game state
 get_game_state(Board, Rows, Columns, BlueLevel, RedLevel) :-
     gameState(Board, Rows, Columns, BlueLevel, RedLevel).
+
 % draw_horizontal_line(+N)
 % Draws a horizontal line of size N with the character '-'
 draw_horizontal_line(N) :-
@@ -18,6 +21,8 @@ draw_horizontal_line(N) :-
     draw_horizontal_line(N1).
 draw_horizontal_line(0).
 
+% draw_index(+Columns)
+% Draws the index of the columns
 draw_index(Columns):-
     write(' '),
     write(' '),
@@ -32,6 +37,8 @@ draw_index_aux(Index, Columns) :-
     draw_index_aux(Index1, Columns).
 draw_index_aux(_, _):-nl.
 
+% draw_top_half(+N)
+% Draws the top half of each row of the board
 draw_top_half(N) :-
     N > 0,
     write(' '),
@@ -42,6 +49,8 @@ draw_top_half(N) :-
     draw_top_half(N1).
 draw_top_half(0).
 
+% draw_middle_half(+Row, +ColumnIndex, +Columns, +Board)
+% Draws the middle half of each row of the board
 draw_middle_half(Row, ColumnIndex, Columns, Board) :-
     ColumnIndex < Columns,
     write(' '),
@@ -53,6 +62,8 @@ draw_middle_half(Row, ColumnIndex, Columns, Board) :-
     draw_middle_half(Row, ColumnIndex1, Columns, Board).
 draw_middle_half(_, _, _, _).
 
+% draw_bottom_half(+N)
+% Draws the bottom half of each row of the board
 draw_bottom_half(N) :-
     N > 0,
     write('_'),
@@ -63,6 +74,8 @@ draw_bottom_half(N) :-
     draw_bottom_half(N1).
 draw_bottom_half(0).
 
+% display_game(+GameState)
+% Displays the game
 display_game(gameState(Board, Rows, Columns,_,_)) :-  
     Columns1 is Columns * 3 + Columns-1,nl,
     draw_index(Columns),
@@ -105,16 +118,14 @@ get_piece(Board, I, J, Element) :-
     J >= 0, J < M, % check if the column index is within bounds
     nth0(J, Row, Element). % get the element at index J in the row
 
-
-    /*
 % get_piece(+Board, +I, +J, +State, +Current)
 % Gets the piece at row I and column J of the board
 get_piece(Board, I, _, Element, Current) :-
     nth0(I, Board, Row), % get the row at index I
     nth0(Current, Row, Element). % get the piece at index Current
-*/
-% place_piece(+Board, +I, +J, +NewPiece, -NewBoard)
-% Places the piece at row I and column J of the board
+
+% place_piece(+Board, +Move, +NewPiece, ?NewBoard)
+% Places a piece at row I and column J of the board
 place_piece(Board,I-J, NewPiece,NewBoard) :-
     nth0(I, Board, Row), % get the row at index I
     replace(Row, J, NewPiece, NewRow),
@@ -135,23 +146,21 @@ not_edge(Board, I, J) :-
     J > 0, J < M - 1. % check if the column index is not at the edge
 
 
-% validate_move(+Board,+I, +J, +State)
-% Checks if it is an edge move results in disc flipping
+%validate_move(+Board, +Move, +State, -NewBoard)
+% Checks if the move is at the edge, but results in flipping
 validate_move(Board, I-J, State, NewBoard) :-
     is_empty(Board, I, J),
     \+not_edge(Board, I, J),!, % check if the position is at the edge
     flip(Board, State, I-J, NewBoard).
 
-% validate_move(+Board,+I, +J, +State)
-% Checks if it is not an edge move and results in flipping 
+% validate_move(+Board, +Move, +State, -NewBoard)
+% Checks if it is not an edge move
 validate_move(Board, I-J,State, NewestBoard) :-
     is_empty(Board, I, J),
     not_edge(Board, I, J),
     place_piece(Board, I-J, State, NewBoard),
     validate_move_aux(NewBoard, I-J,State, NewestBoard).
     
-
-
 validate_move_aux(Board, I-J,State, NewestBoard) :-
     flip(Board, State, I-J, NewBoard),
     flip(NewBoard, State, I-J, NewBoard1),

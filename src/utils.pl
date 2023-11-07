@@ -49,6 +49,8 @@ read_letter_aux(Number,Acc):-
     read_letter_aux(Number,Acc1).
 read_letter_aux(Number,Number).
 
+% update_game_state(+Board)
+% Updates the game state with the new board
 update_game_state(Board) :-
     retract(gameState(_, Rows, Columns,BlueLevel,RedLevel)),
     asserta(gameState(Board, Rows, Columns,BlueLevel,RedLevel)).
@@ -81,7 +83,7 @@ min(Num1, Num2, Min) :-
     Min = Num2.
 
 
-    % predsort(+Pred, +List, -Sorted)
+% predsort(+Pred, +List, -Sorted)
 % Sorts List into Sorted using Pred as the comparison predicate
 predsort(_, [], []).
 predsort(Pred, [X|Xs], Sorted) :-
@@ -100,6 +102,8 @@ insert(Pred, X, [Y|Ys], [X,Y|Ys]) :-
     Order \= '>'.
 insert(_, X, [], [X]).
 
+% clear_buffer
+% Clears the input buffer
 clear_buffer:-
 	repeat,
 	get_char(C),

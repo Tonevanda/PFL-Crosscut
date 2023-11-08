@@ -52,7 +52,7 @@ valid_moves(Board, Piece, 2, ListOfMoves):-
     Columns1 is Columns-1,
     findall(I-J, (
         between(0, Rows1, I), between(0, Columns1, J),
-        validate_move(Board, I-J, Piece, NewBoard),!,
+        validate_move(Board, I-J, Piece, NewBoard),
         value(NewBoard, Piece, NewValue), 
         NewValue < InitialValue % Se NewValue < InitialValue, então quer dizer que a diferença entre o maior segmento e o tamanho necessário para ganhar diminuiu, então o movimento é bom
         ), ListOfMoves).

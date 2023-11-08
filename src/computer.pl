@@ -64,7 +64,7 @@ get_enemy_winning_moves(Board, Piece, ListOfMoves):-
     get_next_state(Piece, EnemyPiece,_),
     Rows1 is Rows-1,
     Columns1 is Columns-1,
-    findall(I-J, (between(1, Rows1, I), between(1, Columns1, J), validate_move(Board, I-J, EnemyPiece, _), validate_move(Board, I-J, Piece, _), results_in_win(Board, I, J, EnemyPiece)), ListOfMoves).
+    findall(I-J, (between(0, Rows1, I), between(0, Columns1, J), validate_move(Board, I-J, EnemyPiece, NewBoard), validate_move(Board, I-J, Piece, _), results_in_win(NewBoard, I, J, EnemyPiece)), ListOfMoves).
 
 % get_winning_moves(+Board, +Piece, -ListOfMoves)
 % Generates a list of moves that the AI can play to win
@@ -72,7 +72,7 @@ get_winning_moves(Board, Piece, ListOfMoves):-
     get_game_state(_, Rows, Columns,_,_),
     Rows1 is Rows-1,
     Columns1 is Columns-1,
-    findall(I-J, (between(1, Rows1, I), between(1, Columns1, J), validate_move(Board, I-J, Piece, NewBoard), results_in_win(NewBoard, I, J, Piece)), ListOfMoves).
+    findall(I-J, (between(0, Rows1, I), between(0, Columns1, J), validate_move(Board, I-J, Piece, NewBoard), results_in_win(NewBoard, I, J, Piece)), ListOfMoves).
 
 % results_in_win(+Board, +I, +J, +Piece)
 % Checks if the move to the position at row I and column J of the board results in a win condition for the given piece

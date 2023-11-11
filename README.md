@@ -102,7 +102,7 @@ valid_moves(Board, Piece, 1, ListOfMoves) :-
     get_game_state(_, Rows, Columns,_,_),
     Rows1 is Rows-1,
     Columns1 is Columns-1,
-    findall(I-J, (between(1, Rows1, I), between(1, Columns1, J), validate_move(Board, I-J, Piece, _)), ListOfMoves).
+    findall(I-J, (between(0, Rows1, I), between(0, Columns1, J), validate_move(Board, I-J, Piece, _)), ListOfMoves).
 ```
 
 This creates every I-J pair that satisfies the `validate_move` predicate, that was alreay previously explained.

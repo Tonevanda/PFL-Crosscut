@@ -58,8 +58,8 @@ The following is a representation of the **Board**, at different stages of the g
       Initial State            Middle of the game              End of the game
 [ [x, x , x , x , x ,x],    [ [x, x , x , x , x ,x],      [ [x, x , x , x , x ,x],
   [x, x , x , x , x ,x],      [x,'R','R','R','B',x],        [x,'R','R','R','R',x],
-  [x, x , x , x , x ,x],      [x, x , x , x ,'B',x],        [x, x , x , x ,'B',x],
-  [x, x , x , x , x ,x],      [x, x , x , x ,'B',x],        [x, x , x , x ,'B',x],
+  [x, x , x , x , x ,x],      [x, x , x ,'B','B',x],        [x, x , x ,'B','B',x],
+  [x, x , x , x , x ,x],      [x, x , x , x , x ,x],        [x, x , x , x , x ,x],
   [x, x , x , x , x ,x] ]     [x, x , x , x , x ,x] ]       [x, x , x , x , x ,x] ]
 
 ```

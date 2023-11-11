@@ -125,10 +125,12 @@ valid_moves(Board, Piece, 2, ListOfMoves):-//
 
 ### End of Game
 
-To verify the end of the game, we implemented the `game_over/3` predicate.<br>
+To verify the end of the game, we implemented the `game_over/3` predicate .<br>
+
 For `game_over` to be true, either one of two conditions must be met:
 - There is a contiguous horizontal segment of the same piece from one side of the board to the other, except for the edge spaces
 - There is a contiguous vertical segment of the same piece from the top to the bottom of the board, except for the edge spaces
+
 For this, we made 2 different implementations of the `game_over` predicate.<br>
 The first one calls the `check_horizontal/5` predicate, that uses the `forall/3` predicate, defined in the `utils.pl` file, to iterate through the row of the recently placed piece to see if it resulted in a win.<br>
 If that one fails, then the other implementation of the `game_over` predicate is called.<br>
@@ -141,7 +143,7 @@ If the last move did result in a win, then `\+game_over` is false, and, because 
 To evaluate the state of the game, we created the `value/3` predicate.<br>
 We represent the value of the current state of the game as the difference between the longest **Ally** segment and the needed size to win.<br>
 To do that, we calculate the longest horizontal **Ally** segment and the longest vertical **Ally** segment, and we calculate the difference between the longest horizontal **Ally** segment and the number of columns - 2 (because the edges don't count) and the difference between the longest vertical **Ally** segment and the number of rows - 2.<br>
-The value of the current state of the game is the minimum value of those differentials.<br
+The value of the current state of the game is the minimum value of those differentials.
 
 ### Computer Plays
 

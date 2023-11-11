@@ -116,7 +116,7 @@ valid_moves(Board, Piece, 2, ListOfMoves):-//
     Rows1 is Rows-1,
     Columns1 is Columns-1,
     findall(I-J, (
-        between(1, Rows1, I), between(1, Columns1, J),
+        between(0, Rows1, I), between(0, Columns1, J),
         validate_move(Board, I-J, Piece, NewBoard),
         value(NewBoard, Piece, NewValue), 
         NewValue < InitialValue

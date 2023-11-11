@@ -15,12 +15,12 @@ Finally, to start playing, run `play.` on the SICStus console. Enjoy!
 
 ## Description of the game
 
-The rules of **Crosscut** implemented by us were taken from Mark Steere's website
+The rules of **Crosscut** implemented by us were taken from Mark Steere's website:<br>
 https://marksteeregames.com/Crosscut_rules.pdf
 
 ### Summary
 
-**Crosscut** is game that takes place in a 2-D rectangular board, size 10x10 or smaller.<br>
+**Crosscut** is game that takes place in a 2-D rectangular board, size 9x9 or smaller.<br>
 There are 2 players, Red and Blue, denoted by the color of their pieces. <br>
 The goal of crosscut is simple: every turn, starting with Red, a player must place a colored disc on the board (if there are placements available, or else the turn is skipped). Whoever can form a contiguous horizontal or vertical segment from one side of the board to the other, except the spaces on the edges, with just his colored discs wins the game!
 
@@ -28,7 +28,7 @@ The goal of crosscut is simple: every turn, starting with Red, a player must pla
 
 #### Placement
 
-You can place a disc on any unoccupied square (subject to “perimeter” restrictions. See Perimeter section below.)
+You can place a disc on any unoccupied square (subject to “perimeter” restrictions. See [Perimeter](#perimeter) section below.)
 
 #### Flanking, Cutting and Disc Flipping
 
@@ -48,26 +48,37 @@ The perimeter is comprised of the edge and corner squares. The player can tempor
 
 ### Internal Game State Representation
 
-To describe the game state, we created a dynamic predicate `gameState/5` that holds the current **Board**, its **Rows** and **Columns**, **BlueLevel** and **RedLevel**.**BlueLevel** and **RedLevel** represent the level of player of both pieces, 0 for human player, 1 for the easy AI and 2 for the hard AI. The **Board** is a list of lists of variable width and height (from 5x5 to 9x9), initialized at the beggining of the game with just the ` ` (space) character.
+To describe the game state, we created a dynamic predicate `gameState/5` that holds the current **Board**, its **Rows** and **Columns**, **BlueLevel** and **RedLevel**. **BlueLevel** and **RedLevel** represent the level of player of both pieces, 0 for human player, 1 for the easy AI and 2 for the hard AI. The **Board** is a list of lists of variable width and height (from 5x5 to 9x9), initialized at the beggining of the game with just the ` ` (space) character.
 
-%%%%%%%%%%%%%%%%%% DEPOIS TEMOS DE JOGAR E METER EXEMPLOS DE JOGO NO INICIO, MEIO E FIM %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+#### Game State Examples
+
+The following is a representation of the **Board**, at different stages of the game:
+
+```
+      Initial State            Middle of the game              End of the game
+[ [x, x , x , x , x ,x],    [ [x, x , x , x , x ,x],      [ [x, x , x , x , x ,x],
+  [x, x , x , x , x ,x],      [x,'R','R','R','B',x],        [x,'R','R','R','R',x],
+  [x, x , x , x , x ,x],      [x, x , x , x ,'B',x],        [x, x , x , x ,'B',x],
+  [x, x , x , x , x ,x],      [x, x , x , x ,'B',x],        [x, x , x , x ,'B',x],
+  [x, x , x , x , x ,x] ]     [x, x , x , x , x ,x] ]       [x, x , x , x , x ,x] ]
+
+```
 
 ### Game State Visualization
 
-For the initial menu, we created the predicate `read_initial_input` which prompts the user for the number of rows, then the number of columns, followed by the type of player for the `R` piece and the `B` piece. If any of these inputs aren't valid, the predicate repeats until all of them are.%%%%temos que mudar isto%%%%<br>
+For the initial menu, we created the predicate `read_initial_input` which prompts the user for the number of rows, then the number of columns, followed by the type of player for the `R` piece and the `B` piece. If any of these inputs aren't valid, the predicate repeats until all of them are.<br>
 With the input validated, we call the `initial_state/4`, which uses the **Rows** and **Columns** inputted by the user to create an empty list of lists, which represents the `Board` at the beggining of the game.<br>
-To display the board, we created the predicate `display_board/0`%%%%podiamos mudar para display_game para nao chatear tanto o stor%%%%. This predicate uses the `Board` information stored in the `gameState` dynamic predicate to display the board in a user-friendly way to the SICStus console.
+To display the board, we created the predicate `display_board/0`. This predicate uses the `Board` information stored in the `gameState` dynamic predicate to display the board in a user-friendly way to the SICStus console.
 
 ### Move Validation and Execution
 
-To validate a move, we created the predicate `move/5`%%%vamos mudar a posição dos argumentos, Move devia estar no fim dos argumentos porque é um - e não +%%%.This predicate calls upon `choose_move/4`, which, depending on the type of player, will generate a move differently. For the human player, for example, `choose_move` simply takes the users input for the row and column the user chooses.<br>
+To validate a move, we created the predicate `move/5`.This predicate calls upon `choose_move/4`, which, depending on the type of player, will generate a move differently. For the human player, for example, `choose_move` simply takes the users input for the row and column the user chooses.<br>
 Afterwards, that move will be sent to the predicate `validate_move/4`, which, as the name suggests, validates the move.<br>
-To do this, we check **three** different conditions in which a move is valid:
+To do this, we check **two** different conditions in which a move is valid:
 - The move is an **edge** move, but results in disc flipping, therefore it is valid
-- The move is **not** an **edge** move, yet it still results in disc flipping
-- The move is **not** an **edge** move
+- The move is **not** an **edge** 
 
-To verify the first **two** conditions, we needed to implement the `flip/4` predicate.<br>
+To verify the first **both** conditions, we needed to implement the `flip/4` predicate, because, i<br>
 This predicate, everytime a piece is placed on the `Board`, checks **all four** directions around the piece placed. If there is an enemy segment adjacent to said piece and, at the end of that segment, there is an **Ally** piece (a piece of the same color of the piece just placed), then that segment will be flipped.<br>
 However, this does not always happen. If there is an **Enemy** segment ***perpendicular*** to the segment to be flipped, there will be no flipping if the ***perpendicular*** segment is the same size or larger than the size of the segment to be flipped, **if** it were flipped.
 So, to do this, we needed to implement a variety of different predicates:
@@ -87,12 +98,30 @@ There are 2 different implementations of this predicate, one for each level of A
 For the easy AI, `valid_moves` creates a list of valid moves called `ListOfMoves` by using a findall:
 
 ```prolog
-findall(I-J, (between(1, Rows1, I), between(1, Columns1, J), validate_move(Board, I-J, Piece, _)), ListOfMoves).
+valid_moves(Board, Piece, 1, ListOfMoves) :-
+    get_game_state(_, Rows, Columns,_,_),
+    Rows1 is Rows-1,
+    Columns1 is Columns-1,
+    findall(I-J, (between(1, Rows1, I), between(1, Columns1, J), validate_move(Board, I-J, Piece, _)), ListOfMoves).
 ```
 
 This creates every I-J pair that satisfies the `validate_move` predicate, that was alreay previously explained.
 
-For the hard AI, %%%%%%%%%%%%%%%%%%%%%%%
+For the hard AI, we do essentially the same thing, but instead of having every valid move available to the player, we only take into account moves that decrease the `value` of the state of the game for that player's piece. The evaluation is explained below in [Game State Evaluation](#game-state-evaluation).
+
+```prolog
+valid_moves(Board, Piece, 2, ListOfMoves):-//
+    value(Board, Piece, InitialValue),
+    get_game_state(Board, Rows, Columns,_,_),
+    Rows1 is Rows-1,
+    Columns1 is Columns-1,
+    findall(I-J, (
+        between(1, Rows1, I), between(1, Columns1, J),
+        validate_move(Board, I-J, Piece, NewBoard),
+        value(NewBoard, Piece, NewValue), 
+        NewValue < InitialValue
+        ), ListOfMoves).
+```
 
 ### End of Game
 
@@ -131,7 +160,9 @@ Because the hard AI always tries to make a move that decreases the value of the 
 
 This project was very interesting to develop, although hard, because Prolog is a very unusual language, at least compared to what we are used to. Even though it was hard, when everything works, it all makes perfect sense and looks great. The beggining was hard because we had to re-wire our brain into forgetting object-oriented and imperative programming and understanding logical programming.<br>
 It's a shame we had a little less than a week to develop this because of other projects. With more time, we could try upgrading the smart AI to become even smarter, possibly through the Minimax algorithm.<br>
-Another limitation we had was the Prolog version used during development. Many predicates documented in the SWI Prolog website do not exist in the Prolog version used to develop this project, such as the `forall/2` predicate. Therefore, we had to create our own, which was a little annoying. I am of the belief that, if we are learning a language and we have to develop a project in that language, we should be able to have access to every resource that language provides.
+Another limitation we had was the Prolog version used during development. Many predicates documented in the SWI Prolog website do not exist in the Prolog version used to develop this project, such as the `forall/2` predicate. Therefore, we had to create our own, which was a little annoying.<br>
+The last limitation we had was with the smart AI. We tried to make our own predsort predicate and order the ListOfMoves by their value, but with big boards it becomes too cumbersome.
+
 
 ## Bibliography
 
